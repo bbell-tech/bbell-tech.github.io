@@ -65,6 +65,7 @@ with sync_playwright() as p:
                 if sw>vw+1: errs.append(f'{tag} {r} overflow {sw}')
                 txt=pg.evaluate("document.querySelector('.view:not([hidden])') ? document.querySelector('.view:not([hidden])').innerText : ''")
                 if 'error' in txt.lower() and ('couldn' in txt.lower() or 'hit an error' in txt.lower()): errs.append(f'{tag} {r} shows error text')
+                if '[object ' in txt: errs.append(f'{tag} {r} shows [object ...] text')
                 if tag=='d' or r in ('home','agent','release'):
                     pg.screenshot(path=f'{SHOTS}/{tag}-{r}.png', full_page=True)
             pg.close()

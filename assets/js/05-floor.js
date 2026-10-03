@@ -155,27 +155,27 @@ function mountFloor(host) {
       const title = L.automated ? "Automated" : "Manual", sub = L.automated ? `${proc.people} ${proc.peopleNote} + flows` : `${proc.people} ${proc.peopleNote}, email + spreadsheets`;
       if (g.labelW) {
         txt(title.toUpperCase(), 16, ln.top + 40, disp(26), L.automated ? c.signal : c.ink);
-        txt(fit(sub, g.labelW - 20, mono(8.5, 500)), 16, ln.top + 56, mono(8.5, 500), c["ink-3"]);
+        txt(fit(sub, g.labelW - 20, mono(10, 500)), 16, ln.top + 56, mono(10, 500), c["ink-3"]);
         L.workers.forEach((w, k) => { const x = 16 + k * 22, y = ln.top + 70; ctx.strokeStyle = c.ink; ctx.lineWidth = 1.5; ctx.strokeRect(x + .5, y + .5, 15, 15); if (w.item) { ctx.fillStyle = working ? c.ink : c["ink-3"]; ctx.fillRect(x + 3, y + 3, 10, 10); } });
-        txt(working ? (L.workers.some(w => w.item) ? "WORKING" : "IDLE") : "OFF SHIFT", 16, ln.top + 102, mono(8, 600), working ? c["ink-2"] : c["ink-3"]);
+        txt(working ? (L.workers.some(w => w.item) ? "WORKING" : "IDLE") : "OFF SHIFT", 16, ln.top + 102, mono(9.5, 600), working ? c["ink-2"] : c["ink-3"]);
         const busy = L.queues.reduce((a, q) => a + q.length, 0);
-        txt("WAITING ON PEOPLE", 16, ln.top + 130, mono(7.5, 600), c["ink-3"]); txt(String(busy), 16, ln.top + 158, disp(30), busy > 12 ? c.crit : c.ink);
-      } else txt(title.toUpperCase() + " · " + sub, 8, ln.top + 14, mono(8, 600), L.automated ? c.signal : c["ink-2"]);
+        txt("WAITING ON PEOPLE", 16, ln.top + 130, mono(9, 600), c["ink-3"]); txt(String(busy), 16, ln.top + 158, disp(30), busy > 12 ? c.crit : c.ink);
+      } else txt(title.toUpperCase() + " · " + sub, 8, ln.top + 14, mono(9.5, 600), L.automated ? c.signal : c["ink-2"]);
       // stations
       L.steps.forEach((s, i) => {
         const r = stationRect(lane, i), hot = hover && hover.lane === lane && hover.i === i;
-        txt(fit((g.narrow ? s.short : s.name).toUpperCase(), r.w + 4, mono(g.narrow ? 7 : 8, 600)), r.x, ln.nameY, mono(g.narrow ? 7 : 8, 600), c["ink-2"]);
+        txt(fit((g.narrow ? s.short : s.name).toUpperCase(), r.w + 4, mono(g.narrow ? 8 : 9.5, 600)), r.x, ln.nameY, mono(g.narrow ? 8 : 9.5, 600), c["ink-2"]);
         if (i < L.steps.length - 1) { const nx = stationRect(lane, i + 1).x; ctx.strokeStyle = c["rule-strong"]; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(r.x + r.w + 2, r.y + r.h / 2); ctx.lineTo(nx - 4, r.y + r.h / 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(nx - 4, r.y + r.h / 2); ctx.lineTo(nx - 8, r.y + r.h / 2 - 3); ctx.lineTo(nx - 8, r.y + r.h / 2 + 3); ctx.closePath(); ctx.fillStyle = c["rule-strong"]; ctx.fill(); }
-        if (s.type === "wait") { ctx.setLineDash([3, 3]); ctx.strokeStyle = s.on ? c.signal : c["ink-2"]; ctx.lineWidth = 1.2; ctx.strokeRect(r.x + .5, r.y + .5, r.w, r.h); ctx.setLineDash([]); if (!L.active[i].length) txt(working ? "WAITING" : "NOBODY'S IN", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(6.5, 600), c["ink-3"], "right"); }
-        else if (s.on) { ctx.fillStyle = c.signal; ctx.fillRect(r.x, r.y, r.w, r.h); if (!g.narrow && !L.active[i].length) txt("FLOW", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(6.5, 700), "#fff", "right"); }
-        else { ctx.fillStyle = working ? c.sheet : c.paper; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = c.ink; ctx.lineWidth = 1.5; ctx.strokeRect(r.x + .75, r.y + .75, r.w - 1.5, r.h - 1.5); if (s.fixed && !g.narrow) txt("HUMAN", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(6.5, 700), c["ink-3"], "right"); }
+        if (s.type === "wait") { ctx.setLineDash([3, 3]); ctx.strokeStyle = s.on ? c.signal : c["ink-2"]; ctx.lineWidth = 1.2; ctx.strokeRect(r.x + .5, r.y + .5, r.w, r.h); ctx.setLineDash([]); if (!L.active[i].length) txt(working ? "WAITING" : "NOBODY'S IN", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(7.5, 600), c["ink-3"], "right"); }
+        else if (s.on) { ctx.fillStyle = c.signal; ctx.fillRect(r.x, r.y, r.w, r.h); if (!g.narrow && !L.active[i].length) txt("FLOW", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(7.5, 700), "#fff", "right"); }
+        else { ctx.fillStyle = working ? c.sheet : c.paper; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = c.ink; ctx.lineWidth = 1.5; ctx.strokeRect(r.x + .75, r.y + .75, r.w - 1.5, r.h - 1.5); if (s.fixed && !g.narrow) txt("HUMAN", r.x + r.w - 5, r.y + r.h / 2 + 3, mono(7.5, 700), c["ink-3"], "right"); }
         if (hot) { ctx.strokeStyle = c.ink; ctx.lineWidth = 2; ctx.strokeRect(r.x - 3, r.y - 3, r.w + 6, r.h + 6); }
-        const q = L.queues[i].length; if (q > 0) { const cols = Math.max(3, Math.floor((g.bw - 8) / (g.sq + 2))); if (q > cols * 14) txt("+" + (q - cols * 14), r.x + r.w, r.y + r.h + 10 + 15 * (g.sq + 2), mono(7.5, 700), c.crit, "right"); }
+        const q = L.queues[i].length; if (q > 0) { const cols = Math.max(3, Math.floor((g.bw - 8) / (g.sq + 2))); if (q > cols * 14) txt("+" + (q - cols * 14), r.x + r.w, r.y + r.h + 10 + 15 * (g.sq + 2), mono(9, 700), c.crit, "right"); }
       });
       // done bin
       const dx = W - g.doneW, dy = ln.boxY - (g.narrow ? 2 : 6);
       ctx.fillStyle = c.ink; ctx.fillRect(dx, dy, g.doneW - (g.narrow ? 4 : 10), g.narrow ? 56 : 76);
-      txt("DONE", dx + 7, dy + 14, mono(7, 700), c["ink-3"]); txt(String(L.done), dx + 7, dy + (g.narrow ? 44 : 58), disp(g.narrow ? 28 : 40), L.automated ? c.signal : c.paper);
+      txt("DONE", dx + 7, dy + 14, mono(8.5, 700), c["ink-3"]); txt(String(L.done), dx + 7, dy + (g.narrow ? 44 : 58), disp(g.narrow ? 28 : 40), L.automated ? c.signal : c.paper);
       // items
       const ease = Math.min(1, dtReal * 9);
       const draw1 = it => { const tg = targetOf(lane, L, it); if (it.x == null) { const r0 = stationRect(lane, 0); it.x = r0.x - 24; it.y = r0.y + r0.h / 2; } it.x += (tg.x - it.x) * ease; it.y += (tg.y - it.y) * ease; if (tg.hide) return;
