@@ -54,6 +54,7 @@ route("home", { title: "Home", render(host) {
       el("div", null, el("p", { class: "lede", html: "I run releases for enterprise payroll and HR software, and I build the automation around them: flows, AI agents, and checks that took <b>20+ hours a week</b> of manual work off my team. I'm looking for my next role doing this full time." }),
         el("div", { class: "hx-avail" }, "Looking for", ["AI automation", "Product operations", "Release & program management", "Solutions / implementation"].map(t => el("span", { class: "r", text: t })))),
       el("div", { class: "hx-ctas" }, el("a", { class: "btn", href: "mailto:bellb2761@gmail.com?subject=Let%27s%20talk", html: 'Email me <span class="arr">→</span>' }), el("a", { class: "btn ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" }), el("a", { class: "btn ghost", href: "#cases", text: "See my work" })))));
+  const cv = el("div"); host.lastChild.append(cv); mountConverge(cv);
 
   host.append(el("section", { class: "sx" }, sxHead("01", "Results", "From my current job at Paylocity. Employer details stay private; the numbers are real."),
     el("div", { class: "board-x" }, RECEIPTS.map(([n, k, p]) => el("div", null, el("span", { class: "k" }, el("span", { text: k }), el("span", { text: "Paylocity" })), flap(n), el("p", { text: p }))))));
@@ -80,7 +81,7 @@ route("home", { title: "Home", render(host) {
 route("lab", { title: "Lab", render(host) {
   pageHead(host, "Lab", "The lab", "Twelve working tools on fictional data, built with Claude as my coding partner. Every one runs in your browser on a rules engine; the Claude code paths are in the repo but switched off here.");
   let cap = null; const chips = el("div", { class: "row", style: "margin-top:1.4rem" }); const list = el("div", { style: "margin-top:1.2rem" });
-  const render = () => { chips.innerHTML = ""; chips.append(el("button", { class: "chip plain", type: "button", "aria-pressed": cap ? "false" : "true", text: "All", onclick: () => { cap = null; render(); } }), Object.entries(CAPS).map(([k, c]) => el("button", { class: "chip plain", type: "button", "aria-pressed": cap === k ? "true" : "false", text: c.name, onclick: () => { cap = k; render(); } })));
+  const render = () => { chips.innerHTML = ""; chips.append(el("button", { class: "chip plain", type: "button", "aria-pressed": cap ? "false" : "true", text: "All", onclick: () => { cap = null; render(); } }), ...Object.entries(CAPS).map(([k, c]) => el("button", { class: "chip plain", type: "button", "aria-pressed": cap === k ? "true" : "false", text: c.name, onclick: () => { cap = k; render(); } })));
     list.replaceChildren(labIndex(PROJECTS.filter(p => !cap || p.caps.includes(cap)))); };
   host.append(chips, list); render();
   host.append(el("div", { class: "section" }, el("div", { class: "callout info" }, el("b", { text: "How to read a project page" }), el("span", { class: "muted", text: "Each page has the problem, what I built, a diagram, and the working tool. Then a Measured block computed in your browser, with a list of what isn't measured (so it isn't claimed), the design decisions and why, known limits, and what production would need." }))));

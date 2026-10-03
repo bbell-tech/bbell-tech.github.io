@@ -65,7 +65,7 @@ registerProject({
     const ta = el("textarea", { id: "redIn", "aria-label": "CSV data", spellcheck: "false", style: "min-height:9rem;white-space:pre;overflow-wrap:normal" });
     const summary = el("div", { class: "kpis" }); const colsHost = el("div"); const checkHost = el("div"); const outHost = el("div");
     body.append(chips, ta, el("div", { class: "row" }, el("button", { class: "btn", type: "button", text: "Scan for identifiers", onclick: () => scan() })), summary, el("div", { class: "grid-2" }, colsHost, checkHost), outHost);
-    const renderChips = () => { chips.innerHTML = ""; chips.append(el("span", { class: "xs muted", text: "Sample:" }), Object.entries(REDACT_SAMPLES).map(([k, s]) => el("button", { class: "chip plain", type: "button", "aria-pressed": k === key ? "true" : "false", text: s.label, onclick: () => { key = k; ta.value = s.csv; renderChips(); scan(); } }))); };
+    const renderChips = () => { chips.innerHTML = ""; chips.append(el("span", { class: "xs muted", text: "Sample:" }), ...Object.entries(REDACT_SAMPLES).map(([k, s]) => el("button", { class: "chip plain", type: "button", "aria-pressed": k === key ? "true" : "false", text: s.label, onclick: () => { key = k; ta.value = s.csv; renderChips(); scan(); } }))); };
     file.addEventListener("change", () => { const f = file.files && file.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { ta.value = String(rd.result).slice(0, 500000); key = null; renderChips(); scan(); toast("Loaded " + f.name); }; rd.readAsText(f); });
     let cols = [], rows = [], header = [], mode = "pii";
     function scan() {
