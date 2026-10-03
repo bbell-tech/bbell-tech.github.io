@@ -65,9 +65,6 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-/* Reduced motion: the demos (simulation, replays, charts) still run because they are the content and move in place;
-   decorative blinking and pulsing stops. Many work laptops report reduced motion by default. */
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .tool-bar .title::before, .floor-bar .ttl::before, .hx-meta .avail::before, .live-btn.on::before, .hire-btn::before, .th-steps li.on span, .typing::after, .fnode[data-state="run"] .st { animation: none !important; } .th-approve:not(.yes):not(.no) { animation: th-drop .45s both !important; } }
 body {
   background: var(--paper);
   color: var(--ink);

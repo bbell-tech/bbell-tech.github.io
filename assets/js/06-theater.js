@@ -168,7 +168,6 @@ const TH_SCENARIOS = [
 
 function mountTheater(host) {
   let sc = TH_SCENARIOS[0], token = 0, paused = false, speed = 1, auto = false, started = false, pending = null, mins = 0;
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const tabs = el("div", { class: "ftabs", role: "tablist", "aria-label": "Scenario" });
   const playBtn = el("button", { type: "button", text: "Pause" }), againBtn = el("button", { type: "button", text: "Replay" });
   const autoIn = el("input", { type: "checkbox" }), speedBtn = el("button", { type: "button", text: "1×" });
@@ -208,7 +207,7 @@ function mountTheater(host) {
           if (!r.width) return res();
           const g = n.cloneNode(true); g.classList.add("th-ghost"); Object.assign(g.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px" }); document.body.append(g);
           const dx = tgt.left + tgt.width / 2 - (r.left + r.width / 2), dy = tgt.top + Math.min(tgt.height, 260) / 2 - (r.top + r.height / 2);
-          const a = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) scale(.35)`, opacity: .15 }], { duration: (reduce ? 420 : 620) / speed, delay: i * 90, easing: "cubic-bezier(.6,0,.3,1)", fill: "forwards" });
+          const a = g.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) scale(.35)`, opacity: .15 }], { duration: 620 / speed, delay: i * 90, easing: "cubic-bezier(.6,0,.3,1)", fill: "forwards" });
           a.onfinish = () => { g.remove(); res(); }; setTimeout(() => { g.remove(); res(); }, 1400);
         })));
         await S.wait(120);
