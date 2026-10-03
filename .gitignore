@@ -1,0 +1,4 @@
+tests/screenshots/
+tests/vendor/
+__pycache__/
+.DS_Store
