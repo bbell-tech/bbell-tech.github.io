@@ -30,46 +30,52 @@ const CASES = [
 ];
 function pageHead(host, label, title, lede) { host.append(el("header", { class: "proj-head" }, el("p", { class: "eyebrow" }, el("span", { class: "tag", text: label })), el("h1", { text: title }), lede ? el("p", { class: "lede", text: lede }) : null)); }
 
+const RECEIPTS = [["20+ HRS", "Every week", "Manual work removed from release operations with Power Automate, SharePoint, and Copilot agents."], ["595", "Before rollout", "Real client questions run through an AI assistant twice, with and without product context."], ["10+", "At once", "Concurrent releases for enterprise payroll and HR software."], ["95%", "On time", "Release delivery across the portfolio."], ["80K+", "Client IDs", "Reached by the software I release."], ["20+", "AI agents", "Released for a public AI platform launch in July 2026."]];
+function flap(text) {
+  const box = el("div", { class: "flap", "aria-label": text }); const chars = [...text]; const cells = chars.map(c => el("i", { class: c === " " ? "sp" : "", "aria-hidden": "true", text: c === " " ? "" : c })); box.append(...cells);
+  const POOL = "0123456789ABCDEFGHKMNPRSTUVWXYZ+%";
+  const run = () => cells.forEach((n, i) => { const final = chars[i]; if (final === " ") return; let k = 6 + i * 3; const tick = () => { if (k-- <= 0) { n.textContent = final; n.classList.remove("flip"); return; } n.textContent = POOL[Math.floor(Math.random() * POOL.length)]; n.classList.remove("flip"); void n.offsetWidth; n.classList.add("flip"); setTimeout(tick, 55); }; tick(); });
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); run(); } }, { threshold: .6 }); io.observe(box); }
+  return box;
+}
+function sxHead(no, title, p) { return el("div", { class: "sx-head" }, el("span", { class: "no", html: `<b>${no}</b> / 04` }), el("div", null, el("h2", { text: title }), p ? el("p", { text: p }) : null)); }
+function labIndex(list) { return el("div", { class: "idx" }, list.map(P => el("a", { href: "#" + P.id }, el("span", { class: "n", text: String(PROJECTS.indexOf(P) + 1).padStart(2, "0") }), el("h3", { text: P.title }), el("p", { text: P.summary }), el("span", { class: "cap", text: P.caps.map(c => CAPS[c].name.split(" ")[0]).join(" · ") }), el("span", { class: "go", "aria-hidden": "true", text: "→" })))); }
+function contactSlab() {
+  return el("div", { class: "slab" }, el("p", { class: "label", text: "Open to new roles · Remote" }), el("h2", { text: "Got a process that eats your team's week?" }),
+    el("a", { class: "mail", href: "mailto:bellb2761@gmail.com", text: "bellb2761@gmail.com" }),
+    el("div", { class: "row" }, el("button", { class: "btn sm", type: "button", text: "Copy email", onclick: e => copyText("bellb2761@gmail.com", e.currentTarget) }), el("a", { class: "btn sm ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" }), el("a", { class: "btn sm ghost", href: "#experience", text: "Experience" })));
+}
+
 route("home", { title: "Home", render(host) {
-  const trace = el("div", { class: "hero-trace" });
-  host.append(el("div", { class: "hero" },
-    el("div", null, el("p", { class: "eyebrow" }, el("span", { class: "tag", text: "Ben Bell" }), "AI automation · operations · release management"),
-      el("h1", null, "I build AI tools that take real work off people's plates, ", el("em", { text: "and prove they work before they ship." })),
-      el("p", { class: "lede", text: "Five-plus years in enterprise payroll and HR software operations: release management, UAT, early access programs, analytics, and automations that remove 20+ hours of manual work a week. This site is my lab: twelve working tools, each with tests, design decisions, and a live mode that runs on Claude." }),
-      el("div", { class: "ctas" }, el("a", { class: "btn", href: "#lab", text: "Explore the lab" }), el("a", { class: "btn ghost", href: "#cases", text: "Work case studies" }), el("button", { class: "btn ghost", type: "button", text: "Turn on live AI", onclick: () => openAISettings() })),
-      el("p", { class: "note", text: "Everything runs in your browser on fictional data. Add your own Anthropic API key and the same tools call Claude directly, with no server in between." })),
-    el("div", null, el("div", { class: "panel-title" }, el("span", { text: "Live: HR ops agent" }), el("a", { class: "xs", href: "#agent", text: "Open full agent →" })), trace)));
-  (async () => {
-    const q = AGENT_SCENARIOS[1].text; trace.append(el("p", { class: "q", text: "“" + q + "”" }));
-    const list = el("ol", { class: "trace" }); trace.append(list);
-    const add = (cls, h, t) => list.append(el("li", { class: cls }, el("div", { class: "th", text: h }), t ? el("div", { class: "bx", style: "font-size:.84rem" }, t) : null));
-    await agentOffline(q, { cancelled: () => false, meta() {}, plan: t => add("t-plan", "Plan", t),
-      tool: async (n, i) => { await sleep(380); add("t-tool", "Tool call", el("code", { class: "call", text: `${n}(${JSON.stringify(i).slice(0, 60)})` })); return AGENT_TOOLS.find(x => x.name === n).run(i); },
-      exec: async (n, i) => { await sleep(300); const t = AGENT_TOOLS.find(x => x.name === n); if (t.write) add("t-tool", "Executed", el("code", { class: "call", text: n })); return t.run(i); },
-      approve: (n, i) => new Promise(res => { const y = el("button", { class: "btn sm", type: "button", text: "Approve" }), no = el("button", { class: "btn sm ghost", type: "button", text: "Reject" }); const li = el("li", { class: "t-approve" }, el("div", { class: "th", text: "Approval required" }), el("div", { class: "bx approve", style: "font-size:.84rem" }, `${n}: ${i.summary || ""}`, el("div", { class: "row", style: "margin-top:.4rem" }, y, no))); list.append(li); const done = ok => { y.disabled = no.disabled = true; li.querySelector(".th").textContent = ok ? "Approved by you" : "Rejected by you"; res(ok); }; y.onclick = () => done(true); no.onclick = () => done(false); }),
-      guard: t => add("t-guard", "Guardrail", t), answer: t => add("t-answer", "Answer", el("span", null, citeify(t, () => { location.hash = "rag"; }))) });
-  })();
-  host.append(el("div", { class: "section" }, el("div", { class: "section-head" }, el("p", { class: "label", text: "Shipped at work · Paylocity" }), el("h2", { text: "Results from my day job" }), el("p", { class: "muted small", text: "Real numbers from my current role. Employer details stay private; the lab rebuilds the same skills in public." })),
-    el("div", { class: "atwork" }, AT_WORK.map(([b, t]) => el("div", null, el("span", { class: "big", text: b }), el("p", { text: t })))), el("p", { style: "margin-top:1rem" }, el("a", { href: "#cases", text: "Read the case studies →" }))));
-  host.append(el("div", { class: "section" }, el("div", { class: "section-head" }, el("p", { class: "label", text: "What I build" }), el("h2", { text: "Ten capabilities, each with a working demo" })),
-    el("div", { class: "cap-grid" }, Object.entries(CAPS).map(([k, c]) => { const ps = PROJECTS.filter(p => p.caps[0] === k || p.caps.includes(k)).slice(0, 3); return el("a", { href: ps[0] ? "#" + ps[0].id : "#lab" }, el("h3", { text: c.name }), el("p", { text: c.blurb }), el("span", { class: "demos", text: ps.map(p => p.title).join(" · ") })); }))));
-  const featured = ["agent", "evals", "extract", "data", "release", "flows"].map(id => PROJECTS.find(p => p.id === id)).filter(Boolean);
-  host.append(el("div", { class: "section" }, el("div", { class: "section-head" }, el("p", { class: "label", text: "The lab" }), el("h2", { text: "Featured projects" }), el("p", { class: "muted", text: "Each one has the problem, the tool, what's measured (and what isn't), design decisions, known limits, and what production would need." })),
-    el("div", { class: "lab-grid" }, featured.map(projectCard)), el("p", { style: "margin-top:1rem" }, el("a", { class: "btn ghost", href: "#lab", text: `All ${PROJECTS.length} projects →` }))));
-  host.append(el("div", { class: "section", id: "method" }, el("div", { class: "section-head" }, el("p", { class: "label", text: "Method" }), el("h2", { text: "How I take a process from messy to usable" })),
-    el("ol", { class: "method" }, [["Sit with the expert", "Watch the work happen, not the version in the SOP. Ask what they do when it breaks."], ["Map the real workflow", "Every step, handoff, system, and wait. Mark the manual steps and the ones that touch personal data."], ["Size the pain", "Volume × minutes × error rate. Pick the step where a small tool removes the most work or risk."], ["Build the smallest useful thing", "A flow, a parser, a check, an agent. Rules where rules work; a model where they don't; a person on the judgment calls."], ["Measure, document, hand off", "A test set before launch, before-and-after numbers, a runbook, and a named owner."]].map(([h, p]) => el("li", null, el("h3", { text: h }), el("p", { text: p }))))));
-  host.append(el("div", { class: "section" }, el("div", { class: "section-head" }, el("p", { class: "label", text: "Field notes" }), el("h2", { text: "How I think about this work" })),
+  const hero = el("div", { class: "hx" },
+    el("div", { class: "hx-meta" }, el("span", { text: "Ben Bell" }), el("span", { text: "Release ops · Automation · Applied AI" }), el("span", { text: "Idaho · Remote" }), el("span", { class: "avail", text: "Open to new roles" })),
+    el("h1", { html: '<span class="strike">Busywork</span> out.<br>Hours <span class="hot">back.</span>' }),
+    el("div", { class: "hx-grid" },
+      el("p", { class: "lede", html: "I run releases for enterprise payroll and HR software. On the side of that job I build the flows, agents, and checks that take repetitive work off a team: <b>20+ hours a week</b> so far. Below is a live model of what that looks like." }),
+      el("div", { class: "hx-ctas" }, el("a", { class: "btn", href: "#workflows", html: 'See the teardowns <span class="arr">→</span>' }), el("a", { class: "btn ghost", href: "#cases", text: "Case studies" }))));
+  host.append(hero); mountFloor(hero);
+
+  host.append(el("section", { class: "sx" }, sxHead("01", "Receipts", "Numbers from my current job at Paylocity. Employer details stay private. The lab rebuilds the same skills in public."),
+    el("div", { class: "board-x" }, RECEIPTS.map(([n, k, p]) => el("div", null, el("span", { class: "k" }, el("span", { text: k }), el("span", { text: "Paylocity" })), flap(n), el("p", { text: p })))),
+    el("p", { style: "margin-top:1rem" }, el("a", { href: "#cases", text: "How each one happened →" }))));
+
+  host.append(el("section", { class: "sx" }, sxHead("02", "The lab", `${PROJECTS.length} working tools on fictional data. Each one comes with tests, the design decisions behind it, and its known limits. They all run offline, and add your own key to run them on Claude.`), labIndex(PROJECTS)));
+
+  host.append(el("section", { class: "sx", id: "method" }, sxHead("03", "How I work a process"),
+    el("ol", { class: "method" }, [["Sit with the expert", "Watch the work happen, not the version in the SOP. Ask what they do when it breaks."], ["Map the real workflow", "Every step, handoff, system, and wait. Mark the manual steps and the ones that touch personal data."], ["Size the pain", "Volume × minutes × error rate. Pick the step where a small tool removes the most work or risk."], ["Build the smallest useful thing", "A flow, a parser, a check, an agent. Rules where rules work, a model where they don't, and a person on the judgment calls."], ["Measure and hand off", "A test set before launch, before-and-after numbers, a runbook, and a named owner."]].map(([h, p]) => el("li", null, el("h3", { text: h }), el("p", { text: p }))))));
+
+  host.append(el("section", { class: "sx" }, sxHead("04", "Field notes"),
     el("div", { class: "note-list" }, NOTES.slice(0, 3).map(n => el("a", { href: "#note-" + n.slug }, el("span", { class: "xs mono muted", text: `${n.date} · ${n.mins} min` }), el("div", null, el("h3", { text: n.title }), el("p", { text: n.dek }))))), el("p", { style: "margin-top:1rem" }, el("a", { href: "#notes", text: "All notes →" }))));
-  host.append(el("div", { class: "section" }, el("div", { class: "contact-box", style: "max-width:720px" }, el("p", { class: "label", text: "Get in touch" }), el("h2", { text: "Let's talk about the work you'd hand to an AI tool tomorrow." }), el("div", { class: "addr", text: "bellb2761@gmail.com" }), el("div", { class: "row" }, el("button", { class: "btn sm", type: "button", text: "Copy email", onclick: e => copyText("bellb2761@gmail.com", e.currentTarget) }), el("a", { class: "btn sm ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" })))));
+  host.append(contactSlab());
 } });
 
 route("lab", { title: "Lab", render(host) {
-  pageHead(host, "Lab", "Twelve working tools", "Personal projects built with Claude as my development partner, on fictional data. Every tool works offline; add an API key and each one runs on Claude.");
-  let cap = null; const chips = el("div", { class: "row", style: "margin-top:1.2rem" }); const grid = el("div", { class: "lab-grid", style: "margin-top:1rem" });
+  pageHead(host, "Lab", "The lab", "Twelve working tools on fictional data, built with Claude as my coding partner. Every one runs offline. Add an API key and it runs on Claude.");
+  let cap = null; const chips = el("div", { class: "row", style: "margin-top:1.4rem" }); const list = el("div", { style: "margin-top:1.2rem" });
   const render = () => { chips.innerHTML = ""; chips.append(el("button", { class: "chip plain", type: "button", "aria-pressed": cap ? "false" : "true", text: "All", onclick: () => { cap = null; render(); } }), Object.entries(CAPS).map(([k, c]) => el("button", { class: "chip plain", type: "button", "aria-pressed": cap === k ? "true" : "false", text: c.name, onclick: () => { cap = k; render(); } })));
-    grid.innerHTML = ""; PROJECTS.filter(p => !cap || p.caps.includes(cap)).forEach(p => grid.append(projectCard(p))); };
-  host.append(chips, grid); render();
-  host.append(el("div", { class: "section" }, el("div", { class: "callout info" }, el("b", { text: "How to read a project page" }), el("span", { class: "muted", text: "Each page has the problem, what I built, a diagram, the working tool, a Measured block computed in your browser (and a list of what isn't measured, so it isn't claimed), design decisions with the reasons, known limits, and what production would need." }))));
+    list.replaceChildren(labIndex(PROJECTS.filter(p => !cap || p.caps.includes(cap)))); };
+  host.append(chips, list); render();
+  host.append(el("div", { class: "section" }, el("div", { class: "callout info" }, el("b", { text: "How to read a project page" }), el("span", { class: "muted", text: "Each page has the problem, what I built, a diagram, and the working tool. Then a Measured block computed in your browser, with a list of what isn't measured (so it isn't claimed), the design decisions and why, known limits, and what production would need." }))));
 } });
 
 route("cases", { title: "Case studies", render(host) {
@@ -124,4 +130,5 @@ route("about", { title: "About", render(host) {
       el("h2", { text: "How I use AI" }), el("ul", { class: "small muted", style: "margin:0;padding-left:1.1rem;display:grid;gap:.35rem" }, ["Spec first: the workflow, rules, and test cases come before code.", "Rules where rules work; a model where they don't.", "People keep the judgment calls; code enforces the guardrails.", "Measure before rollout with a test bank, not a demo."].map(t => el("li", { text: t })))),
     el("div", { class: "stack" }, el("div", { class: "contact-box" }, el("p", { class: "label", text: "Contact" }), el("div", { class: "addr", text: "bellb2761@gmail.com" }), el("div", { class: "row" }, el("button", { class: "btn sm", type: "button", text: "Copy email", onclick: e => copyText("bellb2761@gmail.com", e.currentTarget) }), el("a", { class: "btn sm ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" })), el("p", { class: "xs muted", text: "Based in Idaho. Remote." })),
       el("div", { class: "callout" }, el("b", { text: "Live AI mode and privacy" }), el("span", { class: "muted", text: "Your key goes from your browser to api.anthropic.com and nowhere else. It's held for this tab only unless you tick remember. Use a key with a spending limit." }), el("button", { class: "btn sm ghost", type: "button", text: "Open live AI settings", onclick: () => openAISettings() })))));
+  host.append(contactSlab());
 } });

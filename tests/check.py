@@ -49,7 +49,7 @@ def setup(page, tag, live=False):
     page.route('https://fonts.googleapis.com/**', lambda r: r.abort()); page.route('https://fonts.gstatic.com/**', lambda r: r.abort())
     page.route('https://api.anthropic.com/**', mock_api)
     if live: page.add_init_script("try{sessionStorage.setItem('bb.ai.key',JSON.stringify('sk-test'));localStorage.setItem('bb.ai.model',JSON.stringify('claude-test-1'))}catch(e){}")
-ROUTES=['home','lab','cases','experience','systems','notes','note-testing-ai-assistants','about','agent','rag','evals','extract','data','voc','release','flows','spec','prioritize','redact','prompts']
+ROUTES=['home','workflows','lab','cases','experience','systems','notes','note-testing-ai-assistants','about','agent','rag','evals','extract','data','voc','release','flows','spec','prioritize','redact','prompts']
 mode=sys.argv[1] if len(sys.argv)>1 else 'offline'
 with sync_playwright() as p:
     b=p.chromium.launch()
