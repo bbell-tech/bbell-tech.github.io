@@ -94,7 +94,7 @@ async function agentOffline(text, io) {
     io.plan("No preset scenario matched, so search the handbook and answer from it.");
     const r = await call("search_policy", { query: text });
     const a = ragExtractive(text, r.map(x => ({ doc: HANDBOOK.find(h => h.id === x.id), score: x.score })), RAG_DEFAULT_THRESHOLD);
-    io.answer(a.refuse ? "The handbook doesn't cover that, and offline mode only runs the five preset scenarios. Turn on live AI to ask the agent anything." : a.text + " (Offline mode: for free-form requests, turn on live AI.)");
+    io.answer(a.refuse ? "The handbook doesn't cover that, and offline mode only runs the five preset scenarios. The Claude mode handles free-form requests; it is switched off on this site." : a.text + " (Rules mode: free-form requests need the Claude mode, which is off on this site.)");
   }
 }
 /* Live engine: real tool-use loop against the Anthropic API */
@@ -153,7 +153,7 @@ registerProject({
   lede: "HR and payroll questions take five lookups across three systems before anyone can answer them. This agent does the lookups with tools, shows every call and result, and stops for a human before it files anything. It treats text inside emails as data, so an injected instruction can't change someone's pay.",
   facts: [["Tools", "8 (6 read, 2 write)"], ["Approvals", "Required for every write"], ["Step limit", AGENT_MAX_STEPS + " model turns"], ["Data", "Fictional employees and policies"]],
   problem: "A \"why is my check short?\" ticket means opening the HRIS, the timecard system, the payroll register, and the handbook, then doing overtime math by hand. Most of that is lookup and arithmetic. The risky part is the action at the end, and that's the part that should stay with a person.",
-  built: ["Eight tools with JSON schemas in the Anthropic tool-use format: six read-only lookups and two writes.", "An approval gate in the harness, not the prompt: write tools can't run until a person clicks Approve.", "A trace view showing each plan, tool call, input, result, and approval.", "Offline scenarios that use the same tools and data, and a live mode that runs the real tool-use loop with Claude.", "A prompt-injection scenario and a self-test that runs every scenario twice (approve all, reject all) and checks the guardrails held."],
+  built: ["Eight tools with JSON schemas in the Anthropic tool-use format: six read-only lookups and two writes.", "An approval gate in the harness, not the prompt: write tools can't run until a person clicks Approve.", "A trace view showing each plan, tool call, input, result, and approval.", "Offline scenarios that use the same tools and data, and a Claude mode that runs the real tool-use loop with Claude.", "A prompt-injection scenario and a self-test that runs every scenario twice (approve all, reject all) and checks the guardrails held."],
   arch: () => diagram([
     { id: "u", x: 10, y: 120, w: 120, h: 50, label: "Request", sub: "from HR staff" },
     { id: "m", x: 170, y: 110, w: 150, h: 70, label: "Claude", sub: "system prompt v3 + tool schemas", kind: "ai" },
@@ -213,10 +213,10 @@ registerProject({
       box.innerHTML = ""; const pass = checks.filter(c => c[1]).length;
       box.append(el("div", { class: "mrow" }, el("div", null, el("span", { class: "big", text: `${pass}/${checks.length}` }), el("span", { class: "xs muted", text: "guardrail and accuracy checks pass" })), el("div", null, el("span", { class: "big", text: String(runs) }), el("span", { class: "xs muted", text: "scenario runs" }))),
         el("ul", { class: "gate-list" }, checks.map(([t, ok]) => el("li", null, el("span", { class: "chip " + (ok ? "ok" : "crit"), text: ok ? "pass" : "fail" }), el("span", { text: t }), el("span")))),
-        el("p", { class: "xs muted", text: "These check the offline engine and the harness. The approval gate is the same code in live mode." }));
+        el("p", { class: "xs muted", text: "These check the offline engine and the harness. The approval gate is the same code in the Claude mode." }));
     });
   },
-  notMeasured: ["How often a live model picks the right tools. Run the scenarios in live mode to see it, step by step.", "Resistance to injection attacks beyond this one example.", "Time saved per ticket in a real HR team."],
+  notMeasured: ["How often a Claude model picks the right tools. The Claude mode runs the same scenarios through the real tool-use loop.", "Resistance to injection attacks beyond this one example.", "Time saved per ticket in a real HR team."],
   decisions: [
     ["Approval gate in the harness", "Write tools pause the loop until a person decides.", "A prompt can ask the model to wait, but code guarantees it. Even if the model is tricked, the write can't run."],
     ["Narrow tools", "No tool can change pay, bank details, or employee records directly.", "The safest guardrail is a capability that doesn't exist. The agent proposes; systems of record stay behind their own approvals."],

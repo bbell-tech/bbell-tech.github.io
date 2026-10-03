@@ -95,7 +95,7 @@ registerProject({
       } else {
         const a = ragExtractive(question, hits, +th.value);
         ansHost.append(el("div", { class: "answer" + (a.refuse ? " refuse" : "") }, el("p", null, citeify(a.text, flash)),
-          el("p", { class: "xs muted", text: a.refuse ? `Top score ${hits[0] ? hits[0].score.toFixed(2) : "0"} is below the threshold, so it refuses instead of guessing.` : "Offline baseline: the best-matching sentences, quoted with their source. Live mode writes a fluent answer from the same sections." })));
+          el("p", { class: "xs muted", text: a.refuse ? `Top score ${hits[0] ? hits[0].score.toFixed(2) : "0"} is below the threshold, so it refuses instead of guessing.` : "Offline baseline: the best-matching sentences, quoted with their source. The Claude mode writes a fluent answer from the same sections." })));
       }
     }
     ask();
@@ -107,13 +107,13 @@ registerProject({
         el("tbody", null, [["Stemming on", on], ["Stemming off", off]].map(([n, m]) => el("tr", null, el("td", { text: n }), el("td", { text: pct(m.r1) }), el("td", { text: pct(m.r3) }), el("td", { text: m.mrr.toFixed(2) }), el("td", { text: `${m.answered}/${m.n}` }), el("td", { text: `${m.refused}/4` })))))),
       el("p", { class: "xs muted", text: `16 labeled questions with the correct section marked, plus 4 questions the handbook doesn't cover. Threshold ${RAG_DEFAULT_THRESHOLD}. Recomputed every time this page loads.` }));
   },
-  notMeasured: ["Answer quality from the live model. Run the eval harness with your key to measure it.", "How real employees phrase questions. The test set is written, not collected.", "Latency and cost at production volume."],
+  notMeasured: ["Answer quality from the Claude model. That needs a model in the loop, which is switched off on this site.", "How real employees phrase questions. The test set is written, not collected.", "Latency and cost at production volume."],
   decisions: [
     ["Keyword search before embeddings", "BM25 over 20 sections, in the browser.", "Policy language is literal (\"PTO\", \"overtime\", \"direct deposit\"), the corpus is small, and every ranking is inspectable. Embeddings add a model call and a vector store for little gain at this size. I'd add them, fused with BM25, once the corpus grows or questions get paraphrased."],
     ["One chunk per policy section", "Sections are short and self-contained.", "Splitting a policy mid-way can drop the condition that matters, like \"except where state law requires a payout.\""],
     ["Refuse below a score threshold", "No relevant section, no answer.", "Sending someone to HR costs a few minutes. A wrong answer about pay or leave can cost them money or job protection."],
     ["An exact refusal sentence", "The prompt asks for one fixed refusal string.", "A fixed string is easy to test for, so the eval harness can count refusals instead of guessing at them."]
   ],
-  limits: [["A paraphrase with no words in common with the policy (\"paid for staying late\" vs \"overtime\")", "The threshold refuses instead of guessing. Next step: a synonym list or hybrid retrieval with embeddings."], ["A question that spans two policies (overtime plus a missed punch)", "Top-3 retrieval brings both sections; live mode writes one answer citing both."], ["The handbook changes", "Retrieval is only as current as the source. Version the documents and show an as-of date with each answer."]],
+  limits: [["A paraphrase with no words in common with the policy (\"paid for staying late\" vs \"overtime\")", "The threshold refuses instead of guessing. Next step: a synonym list or hybrid retrieval with embeddings."], ["A question that spans two policies (overtime plus a missed punch)", "Top-3 retrieval brings both sections; the Claude mode writes one answer citing both."], ["The handbook changes", "Retrieval is only as current as the source. Version the documents and show an as-of date with each answer."]],
   production: [["Hybrid retrieval", "BM25 plus embeddings with reciprocal rank fusion, evaluated on the same labeled set before switching."], ["Audience filters", "Managers and employees see different policies; filter at retrieval, not in the prompt."], ["Feedback loop", "A thumbs-down adds the question to the eval bank with the correct section labeled."], ["Monitor refusals", "A rising refusal rate means the handbook has a gap, not that the bot is broken."]]
 });

@@ -1,3 +1,5 @@
+/* The public site runs every tool on its rules engine. The Claude code paths stay in the repo; flip this to bring them back. */
+const LIVE_AI = false;
 /* ================= Live AI mode: browser → Anthropic Messages API, bring your own key ================= */
 const AI = {
   key: null, model: null, models: [], rates: { in: 3, out: 15 }, usage: { in: 0, out: 0, calls: 0 }, listeners: new Set(),
@@ -6,7 +8,7 @@ const AI = {
     this.model = store("ai.model") || null;
     const r = store("ai.rates"); if (r && r.in >= 0) this.rates = r;
   },
-  on() { return !!(this.key && this.model); },
+  on() { return LIVE_AI && !!(this.key && this.model); },
   emit() { this.listeners.forEach(f => { try { f(); } catch (e) { console.error(e); } }); },
   subscribe(f) { this.listeners.add(f); return () => this.listeners.delete(f); },
   headers() { return { "content-type": "application/json", "x-api-key": this.key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }; },
@@ -91,12 +93,14 @@ function openAISettings() {
   dlg.showModal(); keyIn.focus();
 }
 function modeBadge() {
+  if (!LIVE_AI) return el("span", { class: "mode", text: "Rules engine" });
   const b = el("span", { class: "mode" });
   const upd = () => { b.className = "mode" + (AI.on() ? " live" : ""); b.textContent = AI.on() ? "Live · " + AI.model : "Offline baseline"; };
   upd(); AI.subscribe(upd); return b;
 }
 /* Offline / Live segmented control for a tool. Returns {node, get()} */
 function modeSwitch(onChange) {
+  if (!LIVE_AI) return { node: null, get: () => "offline", set() {} };
   let mode = "offline";
   const bOff = el("button", { type: "button", "aria-pressed": "true", text: "Offline baseline" });
   const bOn = el("button", { type: "button", "aria-pressed": "false", text: "Live AI" });

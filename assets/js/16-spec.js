@@ -276,6 +276,6 @@ registerProject({
     ["Name the waits and the rework", "Waiting and rework are flagged as steps, not left as color.", "They're usually where the time goes, and they're the parts nobody puts in the SOP."],
     ["Experiments in the tree", "Every solution ends in a cheap experiment.", "A one-week test with real numbers beats a debate about which automation is worth building."]
   ],
-  limits: [["Pronouns and implied actors (\"we wait\")", "Tracked from the previous named person; live mode resolves them from context."], ["Notes that describe goals instead of steps", "Few steps come out; the open questions ask for the missing detail."], ["Patterns the rules don't know", "Live mode proposes its own candidates with the same structure."]],
+  limits: [["Pronouns and implied actors (\"we wait\")", "Tracked from the previous named person; the Claude mode resolves them from context."], ["Notes that describe goals instead of steps", "Few steps come out; the open questions ask for the missing detail."], ["Patterns the rules don't know", "The Claude mode proposes its own candidates with the same structure."]],
   production: [["Interview template", "Run the same five questions with every expert so notes are comparable."], ["Review loop", "Send the map back to the expert and track their corrections."], ["Backlog", "Accepted candidates flow to the prioritizer, then to Jira with the spec attached."]]
 });
