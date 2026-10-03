@@ -83,7 +83,7 @@ function initTheme() {
 
 /* ---------- Command palette (Ctrl/Cmd + K) ---------- */
 function paletteItems() {
-  const items = [["home", "Home", "Page"], ["lab", "All projects", "Page"], ["cases", "Case studies from work", "Page"], ["experience", "Experience and skills", "Page"], ["systems", "System designs", "Page"], ["notes", "Field notes", "Page"], ["about", "About and contact", "Page"]];
+  const items = [["home", "Home", "Page"], ["workflows", "Workflow teardowns", "Page"], ["lab", "All projects", "Page"], ["cases", "Case studies from work", "Page"], ["experience", "Experience and skills", "Page"], ["systems", "System designs", "Page"], ["notes", "Field notes", "Page"], ["about", "About and contact", "Page"]];
   PROJECTS.forEach(p => items.push([p.id, p.title, p.tag]));
   (typeof NOTES !== "undefined" ? NOTES : []).forEach(n => items.push(["note-" + n.slug, n.title, "Note"]));
   items.push(["__live", "Turn on live AI mode", "Action"], ["__theme", "Switch color theme", "Action"]);

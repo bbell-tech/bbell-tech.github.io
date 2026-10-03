@@ -29,6 +29,9 @@ Each project page also has a **Not measured, so not claimed** list. If a number 
 
 Other sections:
 
+- **The floor (home page):** a live discrete-event simulation of one process run two ways at once, manual and automated, fed by the same arrivals. Pick time-off requests, release kickoff, or a recurring data pull; drag volume; click a step to hand it back to a person. Counters show throughput, time in system, rework, and hands-on hours given back.
+- **Workflows:** a before/after teardown of each of those processes: hands-on time per step, what a flow takes over, what stays human on purpose, and a volume and cost calculator.
+
 - **Case studies:** results from my day job in enterprise payroll and HR software. Details are generalized; the numbers are real.
 - **Experience:** roles, education, and skills split into "Shipped at work," "Building with," and "Domain."
 - **Systems:** four architecture diagrams showing how the pieces fit in production.
@@ -48,7 +51,7 @@ Without a key, every tool still runs on its offline baseline.
 
 ## How it's built
 
-- Plain HTML, CSS, and JavaScript. No framework, no build step required, no dependencies except **sql.js** (SQLite compiled to WebAssembly, loaded from cdnjs only on the data page).
+- Plain HTML, CSS, and JavaScript. Fonts (Big Shoulders, Schibsted Grotesk, Martian Mono; OFL) are self-hosted in `assets/fonts`, so the page makes no third-party requests. No framework, no build step required, no dependencies except **sql.js** (SQLite compiled to WebAssembly, loaded from cdnjs only on the data page).
 - Hash routing with lazy-rendered pages, a command palette (`Ctrl/⌘ K` or `/`), and light/dark themes.
 - All data is fictional: **Larkspur Supply Co.** (handbook, employees, payroll) and **ShiftLedger** (product feedback and releases). The demo date is fixed at October 1, 2026 so every run is reproducible.
 - Built with Claude as a coding partner. The problems, design decisions, and review are mine.
@@ -62,9 +65,11 @@ assets/js/
   02-data.js        fictional company, handbook, employees
   03-prompts.js     versioned prompt registry
   04-frame.js       project page template, routes, palette, theme
+  05-floor.js       the floor: manual vs automated process simulation (canvas)
   10-21-*.js        one file per project
   30-notes.js       field notes
   31-pages.js       home, lab, case studies, experience, systems, about
+  32-workflows.js   before/after process teardowns
   99-boot.js        startup
 docs/
   ARCHITECTURE.md   how the pieces fit and why
