@@ -2,7 +2,7 @@
 
 A working portfolio of AI tools and automations for operations teams. Every project runs in the browser, with tests, design decisions, and known limits written down. Add your own Anthropic API key and the same tools call Claude directly.
 
-**Live site:** `https://<your-username>.github.io` (replace with your GitHub Pages URL)
+**Live site:** `https://bbell-tech.github.io` (replace with your GitHub Pages URL)
 
 ---
 
