@@ -33,11 +33,11 @@ const JUDGE_SCHEMA = { type: "object", properties: { grade: { type: "string", en
 
 registerProject({
   id: "evals", title: "AI Answer Eval Harness", tag: "Evals", caps: ["evals", "retrieval"], badge: "rubric · LLM judge",
-  summary: "A 24-question test bank, a four-level rubric, and two runs side by side (no context vs retrieved policy). Surfaces regressions and unsafe answers. Live mode runs both and grades with an LLM judge.",
+  summary: "A 24-question test bank, a four-level rubric, and two runs side by side (no context vs retrieved policy). Surfaces regressions and unsafe answers. The Claude mode runs both and grades with an LLM judge.",
   lede: "Before an assistant answers employees, you need its error rate, the topics where it fails, and proof that adding context helped more than it hurt. This harness answers those three questions with a fixed test bank and a rubric. It's the same pattern I used at work to test an AI assistant on 595 real client questions.",
   facts: [["Test bank", "24 questions, 6 categories"], ["Runs", "A: no context · B: retrieved policy"], ["Rubric", "Correct · partial · incorrect · unsafe"], ["Live", "Both runs + LLM judge, ~72 calls"]],
   problem: "Most AI rollouts are judged by a few good-looking answers in a demo. Nobody knows the error rate, which topics fail, or whether a change fixed one problem and created another. Without a fixed test bank, every opinion about quality is an anecdote.",
-  built: ["A question bank tied to the handbook: each question lists the facts a correct answer must contain and the sections that hold them.", "Two runs per question: run A has no context, run B gets the top retrieved sections and the citation prompt.", "A four-level rubric where \"unsafe\" means confidently wrong in a way that could cost someone pay or benefits.", "Automatic flags for regressions (worse with context) and unsafe answers, with regrading in the browser.", "Live mode that runs both arms against Claude and grades each answer with an LLM judge using structured output."],
+  built: ["A question bank tied to the handbook: each question lists the facts a correct answer must contain and the sections that hold them.", "Two runs per question: run A has no context, run B gets the top retrieved sections and the citation prompt.", "A four-level rubric where \"unsafe\" means confidently wrong in a way that could cost someone pay or benefits.", "Automatic flags for regressions (worse with context) and unsafe answers, with regrading in the browser.", "The Claude mode that runs both arms against Claude and grades each answer with an LLM judge using structured output."],
   arch: () => diagram([
     { id: "b", x: 10, y: 110, w: 130, h: 54, label: "Question bank", sub: "facts + section ids", kind: "data" },
     { id: "a", x: 190, y: 40, w: 150, h: 50, label: "Run A", sub: "question only", kind: "ai" },
@@ -53,7 +53,7 @@ registerProject({
     let source = "illustrative", filter = "all", cancelRun = false;
     const resetBtn = el("button", { class: "btn sm ghost", type: "button", text: "Reset" });
     const liveBtn = el("button", { class: "btn sm", type: "button", text: "Run live eval" });
-    const body = toolShell(host, "Eval run · " + CO.name + " help desk assistant (fictional)", el("div", { class: "row" }, liveBtn, resetBtn, usageLine()));
+    const body = toolShell(host, "Eval run · " + CO.name + " help desk assistant (fictional)", el("div", { class: "row" }, LIVE_AI ? liveBtn : null, resetBtn, usageLine()));
     const srcNote = el("div", { class: "callout info" }); const kpis = el("div", { class: "kpis" }); const chart = el("div"); const filters = el("div", { class: "row" }); const list = el("div"); const prog = el("div", { class: "stack", hidden: true });
     body.append(srcNote, prog, kpis, chart, filters, list);
     resetBtn.onclick = () => { cancelRun = true; items = orig.map(i => ({ ...i })); source = "illustrative"; render(); };
@@ -85,7 +85,7 @@ registerProject({
     }
     function render() {
       srcNote.innerHTML = "";
-      srcNote.append(source === "live" ? el("span", null, el("b", { text: "Live run · " + AI.model + ". " }), "Answers came from the model; grades came from the LLM judge. Spot-check the judge before trusting it.") : el("span", null, el("b", { text: "Illustrative run. " }), "These answers were written to demonstrate the rubric and the failure types, not produced by a model. Run live eval with your key to grade a real model on the same bank."));
+      srcNote.append(source === "live" ? el("span", null, el("b", { text: "Live run · " + AI.model + ". " }), "Answers came from the model; grades came from the LLM judge. Spot-check the judge before trusting it.") : el("span", null, el("b", { text: "Illustrative run. " }), "These answers were written to demonstrate the rubric and the failure types, not produced by a model. The Claude mode grades a real model on the same bank."));
       const s0 = score(items, "g0"), s1 = score(items, "g1"); const u0 = items.filter(i => i.g0 === "unsafe").length, u1 = items.filter(i => i.g1 === "unsafe").length;
       const regs = items.filter(i => GRADE_SCORE[i.g1] < GRADE_SCORE[i.g0] || (i.g1 === "unsafe" && i.g0 !== "unsafe"));
       kpis.innerHTML = "";
@@ -120,7 +120,7 @@ registerProject({
       (() => { const regs = EVAL_BANK.filter(r => GRADE_SCORE[r[7]] < GRADE_SCORE[r[5]] && r[3].length); const retrieved = regs.filter(r => { const top = handbookIndex().search(r[1], 3).map(h => h.doc.id); return r[3].every(id => top.includes(id)); }).length;
         return el("p", { class: "xs muted", text: `Retrieval coverage tells you whether a wrong run-B answer is a retrieval failure or a generation failure. Of the ${regs.length} regressions in the illustrative run, ${retrieved} had the required section in the top 3, so the fix there is the prompt or model, not the search.` }); })());
   },
-  notMeasured: ["Any real model's accuracy. The default answers are illustrative; live mode produces real ones.", "How often the LLM judge agrees with a person. That needs a human-graded sample.", "The 595-question evaluation I ran at work. Its data is my employer's, so it isn't here."],
+  notMeasured: ["Any real model's accuracy. The default answers are illustrative; the Claude mode produces real ones.", "How often the LLM judge agrees with a person. That needs a human-graded sample.", "The 595-question evaluation I ran at work. Its data is my employer's, so it isn't here."],
   decisions: [
     ["Grade against required facts", "Each question lists the facts a correct answer must contain.", "\"Sounds right\" isn't a standard. Facts make grades repeatable across people, runs, and judges."],
     ["Four levels, with unsafe on its own", "Unsafe is separate from incorrect.", "A vague answer and an answer that tells someone unapproved overtime isn't paid are different risks. Unsafe answers get reviewed first and block release."],

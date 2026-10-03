@@ -3,9 +3,9 @@ registerProject({
   id: "prompts", title: "Prompt Workbench", tag: "Prompts", caps: ["prompts", "evals"], badge: "versions · diffs · cost",
   summary: "Every prompt this site sends to Claude, with its version history, a diff of each change, the reason for it, live variables, a token and cost estimate, and a one-click test.",
   lede: "Prompts are production code that nobody reviews. Here every prompt used by the live tools lives in one registry with versions, diffs, and the reasoning behind each change, so a prompt change can be reviewed and tested like any other change.",
-  facts: [["Prompts", Object.keys(PROMPTS).length + " in the registry"], ["Versions", "3 each, with rationale"], ["Used by", "Every live-mode call on this site"], ["Test", "Run any prompt with your key"]],
+  facts: [["Prompts", Object.keys(PROMPTS).length + " in the registry"], ["Versions", "3 each, with rationale"], ["Used by", "Every live-mode call on this site"], ["Test", "Every prompt is the one the Claude mode sends"]],
   problem: "Prompts usually live inside code strings or someone's chat history. When an AI feature starts giving worse answers, nobody can say what changed, when, or why. There's no diff, no reason, and no test.",
-  built: ["One registry that every live tool reads from, so the prompt you see here is exactly the one that runs.", "Three versions per prompt with a word-level diff and the reason for each change.", "Variable fields that render the final prompt as it will be sent.", "A token estimate and a cost per 1,000 calls using the rates from live AI settings.", "A test button that runs the current version against Claude with your variables."],
+  built: ["One registry that every live tool reads from, so the prompt you see here is exactly the one that runs.", "Three versions per prompt with a word-level diff and the reason for each change.", "Variable fields that render the final prompt as it will be sent.", "A token estimate and a cost per 1,000 calls at list rates.", "A test button that runs the current version against Claude with your variables."],
   mount(host) {
     let pid = "rag", vi = 2, showDiff = true;
     const body = toolShell(host, "Prompt registry", usageLine());
@@ -37,7 +37,7 @@ registerProject({
       main.append(el("div", { class: "row between" }, el("div", { class: "row" }, vtabs, el("label", { class: "inline", for: "pDiff" }, diffCb, "Show changes from previous")), el("span", { class: "xs mono muted", text: "Used by: " + p.usedBy })),
         el("div", { class: "callout" }, el("b", { text: v.v + ": why this version" }), el("span", { class: "muted", text: v.note })),
         el("div", { class: "tool-split" }, el("div", { class: "stack" }, el("div", { class: "panel-title" }, el("span", { text: showDiff && prev ? `Diff ${prev.v} → ${v.v}` : "Template " + v.v })), textBox, el("div", { class: "panel-title" }, el("span", { text: "Variables" })), varsBox),
-          el("div", { class: "stack" }, el("div", { class: "panel-title" }, el("span", { text: "Rendered prompt" }), el("label", { class: "inline xs", for: "pOut" }, "Output tokens", outTok)), rendered, costLine, el("div", { class: "row" }, testBtn), testOut)));
+          el("div", { class: "stack" }, el("div", { class: "panel-title" }, el("span", { text: "Rendered prompt" }), el("label", { class: "inline xs", for: "pOut" }, "Output tokens", outTok)), rendered, costLine, LIVE_AI ? el("div", { class: "row" }, testBtn) : null, testOut)));
       upd();
     }
     let lastOn = AI.on(); AI.subscribe(() => { if (AI.on() !== lastOn) { lastOn = AI.on(); if (host.isConnected) render(); } });

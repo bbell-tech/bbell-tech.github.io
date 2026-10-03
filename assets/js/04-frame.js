@@ -83,10 +83,10 @@ function initTheme() {
 
 /* ---------- Command palette (Ctrl/Cmd + K) ---------- */
 function paletteItems() {
-  const items = [["home", "Home", "Page"], ["workflows", "Workflow teardowns", "Page"], ["lab", "All projects", "Page"], ["cases", "Case studies from work", "Page"], ["experience", "Experience and skills", "Page"], ["systems", "System designs", "Page"], ["notes", "Field notes", "Page"], ["about", "About and contact", "Page"]];
+  const items = [["home", "Home", "Page"], ["workflows", "Workflow teardowns", "Page"], ["lab", "All projects", "Page"], ["cases", "Work: case studies", "Page"], ["experience", "Experience and skills", "Page"], ["systems", "System designs", "Page"], ["notes", "Field notes", "Page"], ["about", "About and contact", "Page"]];
   PROJECTS.forEach(p => items.push([p.id, p.title, p.tag]));
   (typeof NOTES !== "undefined" ? NOTES : []).forEach(n => items.push(["note-" + n.slug, n.title, "Note"]));
-  items.push(["__live", "Turn on live AI mode", "Action"], ["__theme", "Switch color theme", "Action"]);
+  items.push(["__theme", "Switch color theme", "Action"]);
   return items;
 }
 function openPalette() {
@@ -95,7 +95,7 @@ function openPalette() {
   dlg.innerHTML = "";
   const input = el("input", { type: "search", placeholder: "Jump to a project, page, or note…", "aria-label": "Search" });
   const list = el("ul", { role: "listbox" }); let sel = 0, shown = [];
-  const go = it => { dlg.close(); if (it[0] === "__live") openAISettings(); else if (it[0] === "__theme") $("#themeBtn").click(); else location.hash = it[0]; };
+  const go = it => { dlg.close(); if (it[0] === "__theme") $("#themeBtn").click(); else location.hash = it[0]; };
   const render = () => {
     const q = input.value.toLowerCase().trim(); const all = paletteItems();
     shown = all.filter(i => !q || (i[1] + " " + i[2]).toLowerCase().includes(q) || q.split(/\s+/).every(w => (i[1] + " " + i[2]).toLowerCase().includes(w))).slice(0, 14);

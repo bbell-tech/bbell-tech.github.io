@@ -1,10 +1,10 @@
 /* ================= Pages: home, lab, cases, experience, systems, notes, about ================= */
 const AT_WORK = [["20+ hrs", "of manual work removed every week with Power Automate flows, SharePoint automation, and Copilot agents."], ["Hours → 2 min", "for a recurring data pull that used to be done by hand."], ["595", "real client questions run through an AI assistant, with and without product context, before rollout."], ["10+", "releases run at the same time at 95%+ on time, reaching 80,000+ client IDs."]];
 const CASES = [
-  { big: "595", title: "Testing an AI assistant on 595 real client questions", tags: ["evals", "agents"],
+  { big: "595", title: "Testing an AI assistant on 595 real client questions, then automating the check", tags: ["evals", "agents", "automation"],
     context: "An AI assistant was going to answer client questions about a major time-off feature. Before rollout, the team needed to know how often it would be right, and where it wouldn't.",
-    did: "Worked from a bank of real client questions, sorted into categories and marked by priority, and extended it with a better-written set. Used Claude to write browser automation that sent every question to the assistant in a fresh chat and captured each answer to Excel. Ran the full bank twice: with and without product context.",
-    out: "Every answer captured side by side, with and without context, so quality could be reviewed by category and priority instead of by anecdote.", tools: "Claude, browser automation, Excel" },
+    did: "Worked from a bank of real client questions, sorted into categories and marked by priority, and extended it with a better-written set. Used Claude to write browser automation that sent every question to the assistant in a fresh chat and captured each answer to Excel. Ran the full bank twice: with and without product context. Then turned it into a repeatable process: describe a release, and it pulls the past client questions about that area, checks whether the documentation and the AI assistant can each answer them, cross-checks every answer against multiple sources, and routes anything uncertain or contradictory to a person for review.",
+    out: "Every answer captured side by side, so quality is reviewed by category and priority instead of by anecdote. Now every release gets the same check before launch, and people only review the answers the system isn't sure about.", tools: "Claude, browser automation, Excel, multi-source validation, human-in-the-loop review" },
   { big: "20+ hrs/wk", title: "Taking manual work out of release operations", tags: ["automation"],
     context: "Release operations runs on repeated setup work: document sets for every release, status tracking, reminders, and data pulls.",
     did: "Built Power Automate flows, SharePoint document set automation, and Copilot agents to handle the repeatable parts, and kept refining them as the process changed.",
@@ -30,15 +30,15 @@ const CASES = [
 ];
 function pageHead(host, label, title, lede) { host.append(el("header", { class: "proj-head" }, el("p", { class: "eyebrow" }, el("span", { class: "tag", text: label })), el("h1", { text: title }), lede ? el("p", { class: "lede", text: lede }) : null)); }
 
-const RECEIPTS = [["20+ HRS", "Every week", "Manual work removed from release operations with Power Automate, SharePoint, and Copilot agents."], ["595", "Before rollout", "Real client questions run through an AI assistant twice, with and without product context."], ["10+", "At once", "Concurrent releases for enterprise payroll and HR software."], ["95%", "On time", "Release delivery across the portfolio."], ["80K+", "Client IDs", "Reached by the software I release."], ["20+", "AI agents", "Released for a public AI platform launch in July 2026."]];
+const RECEIPTS = [["20+ HRS", "Every week", "Manual work removed from release operations with Power Automate, SharePoint, and Copilot agents."], ["595", "Before rollout", "Real client questions run through an AI assistant, then turned into an automated readiness check for every release."], ["10+", "At once", "Concurrent releases for enterprise payroll and HR software."], ["95%", "On time", "Release delivery across the portfolio."], ["80K+", "Client IDs", "Reached by the software I release."], ["20+", "AI agents", "Released for a public AI platform launch in July 2026."]];
 function flap(text) {
   const box = el("div", { class: "flap", "aria-label": text }); const chars = [...text]; const cells = chars.map(c => el("i", { class: c === " " ? "sp" : "", "aria-hidden": "true", text: c === " " ? "" : c })); box.append(...cells);
   const POOL = "0123456789ABCDEFGHKMNPRSTUVWXYZ+%";
   const run = () => cells.forEach((n, i) => { const final = chars[i]; if (final === " ") return; let k = 6 + i * 3; const tick = () => { if (k-- <= 0) { n.textContent = final; n.classList.remove("flip"); return; } n.textContent = POOL[Math.floor(Math.random() * POOL.length)]; n.classList.remove("flip"); void n.offsetWidth; n.classList.add("flip"); setTimeout(tick, 55); }; tick(); });
-  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); run(); } }, { threshold: .6 }); io.observe(box); }
+  if ("IntersectionObserver" in window) { const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); run(); } }, { threshold: .6 }); io.observe(box); }
   return box;
 }
-function sxHead(no, title, p) { return el("div", { class: "sx-head" }, el("span", { class: "no", html: `<b>${no}</b> / 04` }), el("div", null, el("h2", { text: title }), p ? el("p", { text: p }) : null)); }
+function sxHead(no, title, p) { return el("div", { class: "sx-head" }, el("span", { class: "no", html: `<b>${no}</b> / 06` }), el("div", null, el("h2", { text: title }), p ? el("p", { text: p }) : null)); }
 function labIndex(list) { return el("div", { class: "idx" }, list.map(P => el("a", { href: "#" + P.id }, el("span", { class: "n", text: String(PROJECTS.indexOf(P) + 1).padStart(2, "0") }), el("h3", { text: P.title }), el("p", { text: P.summary }), el("span", { class: "cap", text: P.caps.map(c => CAPS[c].name.split(" ")[0]).join(" · ") }), el("span", { class: "go", "aria-hidden": "true", text: "→" })))); }
 function contactSlab() {
   return el("div", { class: "slab" }, el("p", { class: "label", text: "Open to new roles · Remote" }), el("h2", { text: "Got a process that eats your team's week?" }),
@@ -47,30 +47,38 @@ function contactSlab() {
 }
 
 route("home", { title: "Home", render(host) {
-  const hero = el("div", { class: "hx" },
+  host.append(el("div", { class: "hx" },
     el("div", { class: "hx-meta" }, el("span", { text: "Ben Bell" }), el("span", { text: "Release ops · Automation · Applied AI" }), el("span", { text: "Idaho · Remote" }), el("span", { class: "avail", text: "Open to new roles" })),
     el("h1", { html: '<span class="strike">Busywork</span> out.<br>Hours <span class="hot">back.</span>' }),
     el("div", { class: "hx-grid" },
-      el("p", { class: "lede", html: "I run releases for enterprise payroll and HR software. On the side of that job I build the flows, agents, and checks that take repetitive work off a team: <b>20+ hours a week</b> so far. Below is a live model of what that looks like." }),
-      el("div", { class: "hx-ctas" }, el("a", { class: "btn", href: "#workflows", html: 'See the teardowns <span class="arr">→</span>' }), el("a", { class: "btn ghost", href: "#cases", text: "Case studies" }))));
-  host.append(hero); mountFloor(hero);
+      el("div", null, el("p", { class: "lede", html: "I run releases for enterprise payroll and HR software, and I build the automation around them: flows, AI agents, and checks that took <b>20+ hours a week</b> of manual work off my team. I'm looking for my next role doing this full time." }),
+        el("div", { class: "hx-avail" }, "Looking for", ["AI automation", "Product operations", "Release & program management", "Solutions / implementation"].map(t => el("span", { class: "r", text: t })))),
+      el("div", { class: "hx-ctas" }, el("a", { class: "btn", href: "mailto:bellb2761@gmail.com?subject=Let%27s%20talk", html: 'Email me <span class="arr">→</span>' }), el("a", { class: "btn ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" }), el("a", { class: "btn ghost", href: "#cases", text: "See my work" })))));
 
-  host.append(el("section", { class: "sx" }, sxHead("01", "Receipts", "Numbers from my current job at Paylocity. Employer details stay private. The lab rebuilds the same skills in public."),
-    el("div", { class: "board-x" }, RECEIPTS.map(([n, k, p]) => el("div", null, el("span", { class: "k" }, el("span", { text: k }), el("span", { text: "Paylocity" })), flap(n), el("p", { text: p })))),
-    el("p", { style: "margin-top:1rem" }, el("a", { href: "#cases", text: "How each one happened →" }))));
+  host.append(el("section", { class: "sx" }, sxHead("01", "Results", "From my current job at Paylocity. Employer details stay private; the numbers are real."),
+    el("div", { class: "board-x" }, RECEIPTS.map(([n, k, p]) => el("div", null, el("span", { class: "k" }, el("span", { text: k }), el("span", { text: "Paylocity" })), flap(n), el("p", { text: p }))))));
 
-  host.append(el("section", { class: "sx" }, sxHead("02", "The lab", `${PROJECTS.length} working tools on fictional data. Each one comes with tests, the design decisions behind it, and its known limits. They all run offline, and add your own key to run them on Claude.`), labIndex(PROJECTS)));
+  const pick = [0, 1, 3].map(i => CASES[i]);
+  host.append(el("section", { class: "sx" }, sxHead("02", "Selected work", "What I did, how, and what changed. Full write-ups on the Work page."),
+    el("div", { class: "work-x" }, pick.map(c => el("a", { href: "#cases" }, el("span", { class: "big", text: c.big }), el("h3", { text: c.title }), el("p", { text: c.out }), el("span", { class: "go", text: "Read the case →" }))))));
 
-  host.append(el("section", { class: "sx", id: "method" }, sxHead("03", "How I work a process"),
+  const th = el("div", { id: "theaterHost" });
+  host.append(el("section", { class: "sx" }, sxHead("03", "Watch it work", "Step-by-step replays of automations like the ones I build: files and messages coming in, the flow doing the work, and a person making the calls that need judgment. Try the approval buttons: each choice plays out differently."), th));
+  mountTheater(th);
+
+  const fl = el("div");
+  host.append(el("section", { class: "sx" }, sxHead("04", "Play with the numbers", "One process, two lines, same work coming in. The top line is done by hand; the bottom line is automated. Change the volume, switch processes, or click an orange step to hand it back to a person."), fl));
+  mountFloor(fl);
+
+  host.append(el("section", { class: "sx" }, sxHead("05", "The lab", `${PROJECTS.length} working tools on fictional data, each with tests, design decisions, and known limits.`), labIndex(PROJECTS)));
+
+  host.append(el("section", { class: "sx", id: "method" }, sxHead("06", "How I work a process"),
     el("ol", { class: "method" }, [["Sit with the expert", "Watch the work happen, not the version in the SOP. Ask what they do when it breaks."], ["Map the real workflow", "Every step, handoff, system, and wait. Mark the manual steps and the ones that touch personal data."], ["Size the pain", "Volume × minutes × error rate. Pick the step where a small tool removes the most work or risk."], ["Build the smallest useful thing", "A flow, a parser, a check, an agent. Rules where rules work, a model where they don't, and a person on the judgment calls."], ["Measure and hand off", "A test set before launch, before-and-after numbers, a runbook, and a named owner."]].map(([h, p]) => el("li", null, el("h3", { text: h }), el("p", { text: p }))))));
-
-  host.append(el("section", { class: "sx" }, sxHead("04", "Field notes"),
-    el("div", { class: "note-list" }, NOTES.slice(0, 3).map(n => el("a", { href: "#note-" + n.slug }, el("span", { class: "xs mono muted", text: `${n.date} · ${n.mins} min` }), el("div", null, el("h3", { text: n.title }), el("p", { text: n.dek }))))), el("p", { style: "margin-top:1rem" }, el("a", { href: "#notes", text: "All notes →" }))));
   host.append(contactSlab());
 } });
 
 route("lab", { title: "Lab", render(host) {
-  pageHead(host, "Lab", "The lab", "Twelve working tools on fictional data, built with Claude as my coding partner. Every one runs offline. Add an API key and it runs on Claude.");
+  pageHead(host, "Lab", "The lab", "Twelve working tools on fictional data, built with Claude as my coding partner. Every one runs in your browser on a rules engine; the Claude code paths are in the repo but switched off here.");
   let cap = null; const chips = el("div", { class: "row", style: "margin-top:1.4rem" }); const list = el("div", { style: "margin-top:1.2rem" });
   const render = () => { chips.innerHTML = ""; chips.append(el("button", { class: "chip plain", type: "button", "aria-pressed": cap ? "false" : "true", text: "All", onclick: () => { cap = null; render(); } }), Object.entries(CAPS).map(([k, c]) => el("button", { class: "chip plain", type: "button", "aria-pressed": cap === k ? "true" : "false", text: c.name, onclick: () => { cap = k; render(); } })));
     list.replaceChildren(labIndex(PROJECTS.filter(p => !cap || p.caps.includes(cap)))); };
@@ -102,8 +110,8 @@ route("experience", { title: "Experience", render(host) {
 route("systems", { title: "System designs", render(host) {
   pageHead(host, "Systems", "How the pieces fit", "Architecture for the patterns behind the lab: how this site runs, how an agent stays safe, how answers get grounded and tested, and how automation work flows from idea to owner.");
   const block = (title, d, bullets) => host.append(el("div", { class: "section", style: "padding-top:2.2rem" }, el("div", { class: "section-head" }, el("h2", { text: title })), d, el("ul", { class: "small muted", style: "margin:.8rem 0 0;padding-left:1.1rem;display:grid;gap:.3rem;max-width:80ch" }, bullets.map(b => el("li", { text: b })))));
-  block("This site", diagram([{ id: "gh", x: 10, y: 20, w: 150, h: 54, label: "GitHub Pages", sub: "static files only", kind: "data" }, { id: "br", x: 230, y: 90, w: 180, h: 70, label: "Your browser", sub: "all 12 tools, SQLite (wasm), BM25" }, { id: "k", x: 480, y: 20, w: 150, h: 54, label: "Your API key", sub: "session storage", kind: "guard" }, { id: "api", x: 480, y: 170, w: 250, h: 54, label: "api.anthropic.com", sub: "direct, CORS, no proxy", kind: "ai" }, { id: "cdn", x: 10, y: 170, w: 150, h: 54, label: "cdnjs", sub: "sql.js only" }],
-    [{ from: "gh", to: "br" }, { from: "cdn", to: "br" }, { from: "k", to: "br", dash: true }, { from: "br", to: "api", label: "live mode only" }], { w: 760, h: 240 }), ["No server, no database, no analytics. Offline mode never makes a network request beyond loading the page.", "Live mode sends requests straight from your browser to Anthropic with your key; the key stays in this tab unless you choose to remember it.", "Every live call uses a prompt from the versioned registry in the Prompt Workbench."]);
+  block("This site", diagram([{ id: "gh", x: 10, y: 30, w: 170, h: 58, label: "GitHub Pages", sub: "static files only", kind: "data" }, { id: "br", x: 270, y: 92, w: 220, h: 72, label: "Your browser", sub: "12 tools, replays, simulation, SQLite (wasm)" }, { id: "cdn", x: 10, y: 170, w: 170, h: 58, label: "cdnjs", sub: "sql.js only" }, { id: "rules", x: 580, y: 30, w: 170, h: 58, label: "Rules engines", sub: "run on your device", kind: "ai" }, { id: "none", x: 580, y: 170, w: 170, h: 58, label: "No server", sub: "no tracking, no analytics", kind: "guard" }],
+    [{ from: "gh", to: "br" }, { from: "cdn", to: "br" }, { from: "br", to: "rules" }, { from: "br", to: "none", dash: true }], { w: 760, h: 250 }), ["No server, no database, no analytics. Nothing you type leaves your browser.", "The replays are scripted and the simulation is a model; the lab tools run real rules engines on fictional data.", "The Claude code paths (tool use, structured output, LLM judge) are in the repo, switched off on the public site so every visitor gets the same free, identical run."]);
   block("An agent that can't hurt anyone", PROJECTS.find(p => p.id === "agent").arch(), ["Read tools run freely; write tools stop at an approval gate in the harness.", "Document and tool-result text is data; injected instructions are reported, not followed.", "A step limit, drafts instead of sends, and a full trace for every run."]);
   block("Grounded answers with a quality gate", diagram([{ id: "s", x: 10, y: 100, w: 130, h: 54, label: "Source docs", sub: "versioned", kind: "data" }, { id: "i", x: 180, y: 100, w: 130, h: 54, label: "Index", sub: "BM25 (+ embeddings later)" }, { id: "r", x: 350, y: 30, w: 150, h: 54, label: "Retrieve + answer", sub: "citations or refusal", kind: "ai" }, { id: "e", x: 350, y: 170, w: 150, h: 54, label: "Eval bank", sub: "facts per question" }, { id: "j", x: 560, y: 100, w: 170, h: 54, label: "Release gate", sub: "no new unsafe answers", kind: "guard" }],
     [{ from: "s", to: "i" }, { from: "i", to: "r" }, { from: "i", to: "e" }, { from: "r", to: "j" }, { from: "e", to: "j" }], { w: 760, h: 250 }), ["Retrieval and generation are measured separately so failures get fixed in the right place.", "Every prompt, model, or content change reruns the bank before release.", "Real user questions flow back into the bank every month."]);
@@ -126,9 +134,9 @@ route("about", { title: "About", render(host) {
   host.append(el("div", { class: "about-grid" },
     el("div", { class: "stack" }, el("h2", { text: "What I'm looking for" }), el("p", { class: "muted", text: "Remote roles where I can build automation and AI tools around real operations: AI enablement and automation, product operations, release and program management, and solutions or implementation work." }),
       el("h2", { text: "How this site was built" }), el("p", { class: "muted", text: "I designed every tool, wrote the workflows, rules, test cases, and content, and built the code with Claude as my development partner. All company, employee, client, and product data is fictional. Results in the case studies are from my real work." }),
-      el("p", { class: "muted", text: "Stack: plain HTML, CSS, and JavaScript with no build step and no framework. SQLite runs in the browser through sql.js. Live mode calls the Anthropic Messages API directly from the browser with your key. Nothing is tracked." }),
+      el("p", { class: "muted", text: "Stack: plain HTML, CSS, and JavaScript with no build step and no framework. SQLite runs in the browser through sql.js. The replays and simulation are plain JavaScript. Nothing is tracked." }),
       el("h2", { text: "How I use AI" }), el("ul", { class: "small muted", style: "margin:0;padding-left:1.1rem;display:grid;gap:.35rem" }, ["Spec first: the workflow, rules, and test cases come before code.", "Rules where rules work; a model where they don't.", "People keep the judgment calls; code enforces the guardrails.", "Measure before rollout with a test bank, not a demo."].map(t => el("li", { text: t })))),
     el("div", { class: "stack" }, el("div", { class: "contact-box" }, el("p", { class: "label", text: "Contact" }), el("div", { class: "addr", text: "bellb2761@gmail.com" }), el("div", { class: "row" }, el("button", { class: "btn sm", type: "button", text: "Copy email", onclick: e => copyText("bellb2761@gmail.com", e.currentTarget) }), el("a", { class: "btn sm ghost", href: "https://www.linkedin.com/in/bell-benjamin", target: "_blank", rel: "noopener", text: "LinkedIn ↗" })), el("p", { class: "xs muted", text: "Based in Idaho. Remote." })),
-      el("div", { class: "callout" }, el("b", { text: "Live AI mode and privacy" }), el("span", { class: "muted", text: "Your key goes from your browser to api.anthropic.com and nowhere else. It's held for this tab only unless you tick remember. Use a key with a spending limit." }), el("button", { class: "btn sm ghost", type: "button", text: "Open live AI settings", onclick: () => openAISettings() })))));
+      el("div", { class: "callout" }, el("b", { text: "What's real on this site" }), el("span", { class: "muted", text: "Case study numbers are from my real work. Lab tools are working code on fictional data. Replays are scripted and the simulation is a model; both are labeled where they appear." })))));
   host.append(contactSlab());
 } });

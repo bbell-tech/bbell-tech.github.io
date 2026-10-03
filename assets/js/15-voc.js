@@ -93,11 +93,11 @@ function vocMetrics() {
 
 registerProject({
   id: "voc", title: "Feedback Theme Analyzer", tag: "Analytics", caps: ["analytics", "evals"], badge: "themes · sentiment",
-  summary: "Sixty customer comments turned into themes, sentiment, a trend, and a ranked list of what to fix first, with the quotes to back it up. Live mode lets Claude find themes from scratch.",
+  summary: "Sixty customer comments turned into themes, sentiment, a trend, and a ranked list of what to fix first, with the quotes to back it up. The Claude mode lets Claude find themes from scratch.",
   lede: "Customer feedback arrives as hundreds of short comments across app reviews, surveys, and NPS. This tool tags each one with themes and sentiment, ranks themes by volume times negativity, shows which ones are rising, and pulls the quote that makes the case in a meeting.",
   facts: [["Comments", "60 labeled (fictional product)"], ["Themes", "8 in the codebook"], ["Offline", "Codebook rules + sentiment lexicon"], ["Live", "Claude open coding, JSON output"]],
   problem: "Feedback gets read, not analyzed. Someone skims a spreadsheet, remembers the angriest comments, and the roadmap follows whoever complained most recently. Nobody can say whether clock-in complaints are growing or just loud.",
-  built: ["A codebook of eight themes with patterns, and a sentiment lexicon with negation handling.", "A fix-first ranking: mentions × share negative, with a monthly trend for each theme.", "Representative quotes per theme, and a filterable comment table.", "Live mode: Claude groups the comments into themes from scratch with ids, sentiment, and a quote, so you can compare its themes with the codebook.", "Labeled ground truth for every comment, so the codebook's accuracy is measured, not assumed."],
+  built: ["A codebook of eight themes with patterns, and a sentiment lexicon with negation handling.", "A fix-first ranking: mentions × share negative, with a monthly trend for each theme.", "Representative quotes per theme, and a filterable comment table.", "The Claude mode: Claude groups the comments into themes from scratch with ids, sentiment, and a quote, so you can compare its themes with the codebook.", "Labeled ground truth for every comment, so the codebook's accuracy is measured, not assumed."],
   mount(host) {
     const ms = modeSwitch(() => render());
     const body = toolShell(host, "Feedback · " + VOC_PRODUCT + " · Jan–Sep 2026", el("div", { class: "row" }, ms.node, usageLine()));
@@ -130,6 +130,7 @@ registerProject({
     function renderLive() {
       liveHost.innerHTML = "";
       liveHost.append(el("div", { class: "panel-title" }, el("span", { text: "Open coding with Claude" })));
+      if (!LIVE_AI) { liveHost.innerHTML = ""; return; }
       if (ms.get() !== "live") { liveHost.append(el("p", { class: "small muted", text: "The codebook only finds the themes someone wrote patterns for. Turn on live AI to let Claude read all 60 comments and propose its own themes, then compare them with the codebook." }), el("button", { class: "btn sm", type: "button", text: "Turn on live AI", onclick: () => { if (AI.on()) ms.set("live"); else openAISettings(); } })); return; }
       const go = el("button", { class: "btn sm", type: "button", text: liveThemes ? "Run again" : "Find themes with " + AI.model });
       liveHost.append(go);
@@ -155,6 +156,6 @@ registerProject({
     ["Rank by negative mentions, not volume", "Fix-first order uses negative mentions.", "A theme with lots of praise isn't a problem. Volume alone would rank \"Time off\" next to \"Mobile clock-in.\""],
     ["Always carry a quote", "Every theme comes with a representative comment.", "Numbers start the conversation; a customer's own words get the fix prioritized."]
   ],
-  limits: [["Sarcasm and irony", "The lexicon reads \"Great, another update that logs me out\" as positive. Live mode handles tone; the measured block shows the lexicon's miss rate."], ["New issues the codebook doesn't know", "Open coding in live mode; new themes get added to the codebook with patterns."], ["Small monthly counts", "Rising flags need at least four recent mentions so one angry week doesn't trigger them."]],
+  limits: [["Sarcasm and irony", "The lexicon reads \"Great, another update that logs me out\" as positive. The Claude mode handles tone; the measured block shows the lexicon's miss rate."], ["New issues the codebook doesn't know", "Open coding in the Claude mode; new themes get added to the codebook with patterns."], ["Small monthly counts", "Rising flags need at least four recent mentions so one angry week doesn't trigger them."]],
   production: [["Pipeline", "Pull reviews, survey responses, and ticket text on a schedule; dedupe; label; store."], ["Close the loop", "Each top theme maps to a backlog item, and the trend shows whether the fix worked."], ["PII", "Strip names and contact details from comments before they're stored or sent to a model."]]
 });

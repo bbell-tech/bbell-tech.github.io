@@ -1,6 +1,6 @@
 # Ben Bell · AI Automation Builder
 
-A working portfolio of AI tools and automations for operations teams. Every project runs in the browser, with tests, design decisions, and known limits written down. Add your own Anthropic API key and the same tools call Claude directly.
+A working portfolio of AI tools and automations for operations teams. Every project runs in the browser, with tests, design decisions, and known limits written down.
 
 **Live site:** `https://bbell-tech.github.io` (replace with your GitHub Pages URL)
 
@@ -29,6 +29,8 @@ Each project page also has a **Not measured, so not claimed** list. If a number 
 
 Other sections:
 
+- **Automation replays (home page):** scripted, step-by-step runs of four automations: an AI readiness check for releases (based on my real process), AP invoice 3-way matching, property maintenance dispatch, and energy-audit rebate forms filled and submitted. Files and messages arrive, the flow does the work, and an approval card waits for the visitor; each choice plays out differently. Labeled as scripted replays on fictional data.
+
 - **The floor (home page):** a live discrete-event simulation of one process run two ways at once, manual and automated, fed by the same arrivals. Pick time-off requests, release kickoff, or a recurring data pull; drag volume; click a step to hand it back to a person. Counters show throughput, time in system, rework, and hands-on hours given back.
 - **Workflows:** a before/after teardown of each of those processes: hands-on time per step, what a flow takes over, what stays human on purpose, and a volume and cost calculator.
 
@@ -37,17 +39,9 @@ Other sections:
 - **Systems:** four architecture diagrams showing how the pieces fit in production.
 - **Notes:** six short field notes on testing AI assistants, agent guardrails, rules-first design, and running releases.
 
-## Live mode (bring your own key)
+## Live mode
 
-Click **Live AI** in the top bar, paste an Anthropic API key, and pick a model. The tools then call the Messages API straight from your browser:
-
-- `POST https://api.anthropic.com/v1/messages` with the `anthropic-dangerous-direct-browser-access: true` header (Anthropic's supported CORS opt-in)
-- Tool use for the agent loop; forced tool choice (`tool_choice: {type: "tool"}`) for structured output in extraction, SQL, themes, workflow maps, and eval grading
-- A usage meter shows input and output tokens and an estimated cost (rates are editable)
-
-**Privacy:** the key is kept in `sessionStorage` (cleared when the tab closes) unless you tick "remember." It is only ever sent to `api.anthropic.com`. There is no server, no analytics, and no tracking on this site.
-
-Without a key, every tool still runs on its offline baseline.
+Each lab tool also has a Claude code path (tool use, structured output, LLM judge). It is switched off on the public site (`LIVE_AI = false` in `assets/js/01-ai.js`) so every visitor gets the same free, identical run. Flip the flag to bring back the bring-your-own-key settings and the Live/Offline switches.
 
 ## How it's built
 
@@ -66,6 +60,7 @@ assets/js/
   03-prompts.js     versioned prompt registry
   04-frame.js       project page template, routes, palette, theme
   05-floor.js       the floor: manual vs automated process simulation (canvas)
+  06-theater.js     automation replays: scripted scenarios with approvals
   10-21-*.js        one file per project
   30-notes.js       field notes
   31-pages.js       home, lab, case studies, experience, systems, about
@@ -89,7 +84,7 @@ python3 -m http.server 8000
 ```bash
 pip install playwright
 python3 tests/check.py offline   # every route at 1280px light and 390px dark: no errors, no horizontal overflow
-python3 tests/check.py live      # every live mode against a mocked Anthropic API
+python3 tests/check.py live      # every live mode against a mocked Anthropic API (needs LIVE_AI = true)
 ```
 
 ## Contact

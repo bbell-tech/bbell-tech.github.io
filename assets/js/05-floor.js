@@ -2,7 +2,7 @@
 /* Both lines get the same arrivals (one seeded RNG). People work 8–17 on weekdays; flows run around the clock.
    Approvers only act during working hours. Service times and rates are illustrative, and the assumptions table says so. */
 const FLOOR_PROCS = [
-  { id: "pto", tab: "Time-off requests", unit: "request", vol: 40, volMax: 90, people: 2, peopleNote: "HR ops",
+  { id: "pto", tab: "Time off", unit: "request", vol: 40, volMax: 90, people: 2, peopleNote: "HR ops",
     lab: [["extract", "Document-to-JSON"], ["agent", "HR Ops Agent"], ["flows", "Automation Recipes"]],
     steps: [
       { name: "Read email", short: "Intake", mins: 4, autoMins: .5, exc: .05, excMins: 4, auto: true, how: "AI extraction turns the email into a typed record. Low-confidence reads go to a person." },
@@ -20,7 +20,7 @@ const FLOOR_PROCS = [
       { name: "Wait on sign-offs", short: "Sign-off", type: "wait", wait: 960, autoWait: 360, auto: true, how: "Reminders run on a schedule, with escalation after 2 days." },
       { name: "Update tracker + notify", short: "Tracker", mins: 15, err: .04, autoMins: .5, auto: true, how: "Status writes back to the tracker and the release channel." }
     ] },
-  { id: "pull", tab: "Recurring data pull", unit: "report", vol: 3, volMax: 8, people: 1, peopleNote: "analyst",
+  { id: "pull", tab: "Data pull", unit: "report", vol: 3, volMax: 8, people: 1, peopleNote: "analyst",
     lab: [["data", "Ask the HR Data"], ["evals", "Eval Harness"], ["flows", "Automation Recipes"]],
     steps: [
       { name: "Export from 3 systems", short: "Export", mins: 35, autoMins: 1.5, exc: .03, excMins: 15, auto: true, how: "A scheduled dataflow pulls from the source APIs." },
@@ -29,12 +29,39 @@ const FLOOR_PROCS = [
       { name: "Sanity check", short: "Check", mins: 10, auto: false, fixed: true, how: "Stays human on purpose: a person looks at the numbers before they go out." },
       { name: "Send", short: "Send", mins: 5, autoMins: .2, auto: true, how: "Sent to the subscriber list as soon as the check passes." }
     ] }
+,
+  { id: "maint", tab: "Maintenance", unit: "request", vol: 12, volMax: 40, people: 1, peopleNote: "coordinator",
+    lab: [["extract", "Document-to-JSON"], ["flows", "Automation Recipes"], ["agent", "HR Ops Agent"]],
+    steps: [
+      { name: "Take the call or text", short: "Intake", mins: 5, autoMins: .5, exc: .1, excMins: 5, auto: true, how: "Texts, emails, and portal requests land in one queue as typed records." },
+      { name: "Triage + work order", short: "Triage", mins: 8, err: .05, autoMins: .3, exc: .15, excMins: 6, auto: true, how: "Category and urgency set by rules plus a classifier. No heat in winter is always an emergency." },
+      { name: "Find + call a vendor", short: "Vendor", mins: 15, autoMins: 1, exc: .1, excMins: 10, auto: true, how: "Picks by trade, on-call status, and rating, then texts the job. No phone tag." },
+      { name: "Owner approval over $500", short: "Approve", type: "wait", wait: 480, autoWait: 120, auto: true, how: "The owner gets one card with the quote and photos, plus reminders." },
+      { name: "Update tenant + close", short: "Close", mins: 7, err: .03, autoMins: .3, auto: true, how: "Tenant updates go out at each step. The work order closes when the invoice and photo arrive." }
+    ] },
+  { id: "apinv", tab: "AP invoices", unit: "invoice", vol: 60, volMax: 200, people: 2, peopleNote: "AP clerks",
+    lab: [["extract", "Document-to-JSON"], ["flows", "Automation Recipes"], ["release", "Release Readiness"]],
+    steps: [
+      { name: "Open email + save PDF", short: "Intake", mins: 2, autoMins: .2, exc: .03, excMins: 2, auto: true, how: "The AP inbox is watched. Attachments are filed by vendor automatically." },
+      { name: "Key invoice into ERP", short: "Key in", mins: 6, err: .04, autoMins: .3, exc: .08, excMins: 4, auto: true, how: "Extraction reads header and lines. Low-confidence fields go to a person." },
+      { name: "3-way match", short: "Match", mins: 5, err: .03, autoMins: .2, exc: .12, excMins: 6, auto: true, how: "PO, receipt, and invoice compared line by line, with a price tolerance." },
+      { name: "Approval", short: "Approve", type: "wait", wait: 300, autoWait: 60, auto: true, how: "Clean matches under the limit auto-approve. Exceptions go to the right approver." },
+      { name: "Post + schedule payment", short: "Post", mins: 2, autoMins: .2, auto: true, how: "Posted to the ledger and added to the next payment run." }
+    ] },
+  { id: "rebate", tab: "Energy rebates", unit: "application", vol: 4, volMax: 16, people: 1, peopleNote: "coordinator",
+    lab: [["extract", "Document-to-JSON"], ["spec", "Workflow-to-Spec"], ["redact", "PII Redactor"]],
+    steps: [
+      { name: "Collect audit package", short: "Collect", mins: 15, autoMins: 1, exc: .1, excMins: 10, auto: true, how: "Field data, bills, and photos upload as one package with a checklist." },
+      { name: "Pull bills + calculate savings", short: "Calculate", mins: 40, err: .05, autoMins: 2, exc: .1, excMins: 15, auto: true, how: "Bills are read and savings modeled the same way every time." },
+      { name: "Fill the state form", short: "Fill form", mins: 45, err: .08, autoMins: 1, exc: .05, excMins: 15, auto: true, how: "Every field is filled from the package. Nothing is re-typed." },
+      { name: "Senior auditor review", short: "Review", mins: 10, auto: false, fixed: true, how: "Stays human on purpose: a certified auditor signs off before anything is filed." },
+      { name: "Submit + track", short: "Submit", mins: 15, autoMins: 1, exc: .03, excMins: 10, auto: true, how: "Submitted to the portal, confirmation number logged, homeowner emailed." }
+    ] }
 ];
 
 function mountFloor(host) {
   const R = mulberry32(20261001);
   let proc = FLOOR_PROCS[0], vol = proc.vol, speed = 160, running = true, t = 0, lines = [], colors = {}, hover = null, visible = true, lastTs = 0, nextId = 1;
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; if (reduce) running = false;
 
   /* ---------- DOM ---------- */
   const tabs = el("div", { class: "ftabs", role: "tablist", "aria-label": "Process" });

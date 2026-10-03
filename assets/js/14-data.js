@@ -110,11 +110,11 @@ function resultTable(res) {
 
 registerProject({
   id: "data", title: "Ask the HR Data", tag: "Analytics", caps: ["analytics", "privacy"], badge: "NL → SQL · SQLite",
-  summary: "Ask a question in plain English, get SQL, a result table, and a chart, all from a real SQLite database running in your browser. Live mode writes the SQL with Claude and repairs its own errors.",
+  summary: "Ask a question in plain English, get SQL, a result table, and a chart, all from a real SQLite database running in your browser. The Claude mode writes the SQL with Claude and repairs its own errors.",
   lede: "Most \"quick data questions\" wait days for someone who knows SQL and the schema. This tool runs a real SQLite database in the browser, turns questions into read-only queries, and charts the result. Every query is visible and editable, so the answer can be checked, not just trusted.",
   facts: [["Database", "SQLite (sql.js) in the browser"], ["Tables", "4: employees, timecards, tickets, PTO"], ["Safety", "Read-only twice: guard + query_only"], ["Engines", "8 preset queries · Claude live"]],
   problem: "Leaders ask questions like \"who's going to lose PTO at year end?\" or \"which team is living on overtime?\" The data exists, but the answer depends on someone with the schema in their head. By the time it comes back, the question has changed.",
-  built: ["An in-memory SQLite database with about 140 fictional employees, 2,000+ timecard rows, 620 tickets, and 320 PTO requests.", "Eight preset questions with hand-written SQL, so the tool is useful with no key.", "Live mode: Claude writes the query from the schema prompt, the app checks it, runs it, and sends any SQL error back for one repair attempt.", "A read-only guard that rejects anything but a single SELECT, plus SQLite's query_only mode as a second lock.", "Automatic charts: bars for categories, lines for time series."],
+  built: ["An in-memory SQLite database with about 140 fictional employees, 2,000+ timecard rows, 620 tickets, and 320 PTO requests.", "Eight preset questions with hand-written SQL, so the tool is useful with no key.", "The Claude mode: Claude writes the query from the schema prompt, the app checks it, runs it, and sends any SQL error back for one repair attempt.", "A read-only guard that rejects anything but a single SELECT, plus SQLite's query_only mode as a second lock.", "Automatic charts: bars for categories, lines for time series."],
   arch: () => diagram([
     { id: "q", x: 10, y: 110, w: 120, h: 50, label: "Question" },
     { id: "p", x: 160, y: 30, w: 150, h: 54, label: "Preset match", sub: "offline" },
@@ -159,7 +159,7 @@ registerProject({
       }
       const qt = new Set(tokenize(question)); let best = DATA_PRESETS[0], bs = -1;
       DATA_PRESETS.forEach(p => { const s = tokenize(p.q).filter(w => qt.has(w)).length; if (s > bs) { bs = s; best = p; } });
-      sqlTa.value = best.sql; expl.textContent = best.q === question ? "Preset query, written by hand." : bs > 0 ? `Offline mode matched the closest preset: "${best.q}" Turn on live AI for any question.` : "Offline mode only has the eight presets. Turn on live AI to ask anything.";
+      sqlTa.value = best.sql; expl.textContent = best.q === question ? "Preset query, written by hand." : bs > 0 ? `Offline mode matched the closest preset: "${best.q}" Pick a preset to see the full answer.` : "Offline mode only has the eight presets. Pick a preset to see the full answer.";
       exec(best.sql, best.chart);
     }
   },

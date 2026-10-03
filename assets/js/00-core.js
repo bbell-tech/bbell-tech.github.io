@@ -156,22 +156,23 @@ function diagram(nodes, edges, { w = 760, h = 300, label } = {}) {
   const s = svg("svg", { class: "diagram", viewBox: `0 0 ${w} ${h}`, style: `width:100%;min-width:${Math.min(w, 620)}px;height:auto`, role: "img", "aria-label": label || "Diagram" });
   const id = "ah" + Math.floor(Math.random() * 1e6);
   s.append(svg("defs", null, svg("marker", { id, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" }, svg("path", { d: "M0,0 L10,5 L0,10 z", fill: "var(--ink-3)" }))));
-  const N = {}; nodes.forEach(n => N[n.id] = n);
+  const N = {}, labels = []; nodes.forEach(n => N[n.id] = n);
   for (const e of edges) {
     const a = N[e.from], b = N[e.to]; const acx = a.x + a.w / 2, acy = a.y + a.h / 2, bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
     let d; const horiz = Math.abs(bcx - acx) > Math.abs(bcy - acy);
     if (horiz) { const x1 = bcx > acx ? a.x + a.w : a.x, x2 = bcx > acx ? b.x - 2 : b.x + b.w + 2, mx = (x1 + x2) / 2; d = `M${x1},${acy} H${mx} V${bcy} H${x2}`; }
     else { const y1 = bcy > acy ? a.y + a.h : a.y, y2 = bcy > acy ? b.y - 2 : b.y + b.h + 2, my = (y1 + y2) / 2; d = `M${acx},${y1} V${my} H${bcx} V${y2}`; }
     s.append(svg("path", { d, fill: "none", stroke: e.color || "var(--ink-3)", "stroke-width": "1.3", "stroke-dasharray": e.dash ? "4 3" : null, "marker-end": `url(#${id})` }));
-    if (e.label) { const lx = horiz ? (acx + bcx) / 2 : bcx + 6, ly = horiz ? Math.min(acy, bcy) - 6 : (acy + bcy) / 2; s.append(svg("text", { x: lx, y: ly, "text-anchor": horiz ? "middle" : "start", style: "font-size:10px", text: e.label })); }
+    if (e.label) { let lx, ly, anchor = "middle"; if (horiz) { const right = bcx > acx, x2 = right ? b.x : b.x + b.w; lx = right ? x2 - 6 : x2 + 6; anchor = right ? "end" : "start"; ly = bcy - 6; } else { lx = bcx + 6; ly = (Math.max(a.y + a.h, b.y + b.h) + Math.min(a.y, b.y)) / 2 + (bcy > acy ? 4 : 0); anchor = "start"; } labels.push(svg("text", { x: lx, y: ly, "text-anchor": anchor, class: "el", text: e.label })); }
   }
   for (const n of nodes) {
     const col = { ai: "var(--ok)", guard: "var(--crit)", human: "var(--warn)", data: "var(--focus)" }[n.kind] || "var(--rule-strong)";
     s.append(svg("rect", { x: n.x, y: n.y, width: n.w, height: n.h, rx: 3, fill: n.kind === "ai" ? "var(--ok-soft)" : n.kind === "guard" ? "var(--crit-soft)" : n.kind === "human" ? "var(--warn-soft)" : "var(--sheet)", stroke: col, "stroke-width": "1.3" }));
-    const lines = wrapText(n.label, Math.max(10, Math.floor(n.w / 7.4)));
+    const lines = wrapText(n.label, Math.max(10, Math.floor(n.w / 7.6)));
     lines.forEach((l, i) => s.append(svg("text", { x: n.x + n.w / 2, y: n.y + 18 + i * 14, "text-anchor": "middle", class: "nt", text: l })));
-    if (n.sub) wrapText(n.sub, Math.floor(n.w / 6.2)).slice(0, 2).forEach((l, i) => s.append(svg("text", { x: n.x + n.w / 2, y: n.y + 20 + lines.length * 14 + i * 12, "text-anchor": "middle", style: "font-size:10px", text: l })));
+    if (n.sub) wrapText(n.sub, Math.floor((n.w - 12) / 5.6)).slice(0, 2).forEach((l, i) => s.append(svg("text", { x: n.x + n.w / 2, y: n.y + 21 + lines.length * 14 + i * 13, "text-anchor": "middle", text: l })));
   }
+  s.append(...labels);
   return el("div", { class: "arch chart-wrap" }, s);
 }
 function kpiBox(label, val, sub, color) { return el("div", { class: "fbox" }, el("div", { class: "label", text: label }), el("div", { class: "v", style: color ? `color:var(--${color})` : null, text: val }), sub ? el("div", { class: "sub", text: sub }) : null); }

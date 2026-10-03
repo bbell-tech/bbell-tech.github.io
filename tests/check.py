@@ -51,6 +51,8 @@ def setup(page, tag, live=False):
     if live: page.add_init_script("try{sessionStorage.setItem('bb.ai.key',JSON.stringify('sk-test'));localStorage.setItem('bb.ai.model',JSON.stringify('claude-test-1'))}catch(e){}")
 ROUTES=['home','workflows','lab','cases','experience','systems','notes','note-testing-ai-assistants','about','agent','rag','evals','extract','data','voc','release','flows','spec','prioritize','redact','prompts']
 mode=sys.argv[1] if len(sys.argv)>1 else 'offline'
+if mode=='live' and 'const LIVE_AI = false' in open(os.path.join(ROOT,'assets','js','01-ai.js')).read():
+    print('Live mode is switched off (LIVE_AI = false in assets/js/01-ai.js). Set it to true to run the live tests.'); srv.terminate(); sys.exit(0)
 with sync_playwright() as p:
     b=p.chromium.launch()
     if mode=='offline':
