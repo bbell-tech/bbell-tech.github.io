@@ -48,6 +48,7 @@ def setup(page, tag, live=False):
         page.route('https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.wasm', lambda r: r.fulfill(path=VENDOR+'/sql-wasm.wasm', content_type='application/wasm'))
     page.route('https://fonts.googleapis.com/**', lambda r: r.abort()); page.route('https://fonts.gstatic.com/**', lambda r: r.abort())
     page.route('https://api.anthropic.com/**', mock_api)
+    page.route('https://gc.zgo.at/**', lambda r: r.fulfill(body='window.goatcounter=window.goatcounter||{};window.goatcounter.count=function(){};', content_type='application/javascript'))
     if live: page.add_init_script("try{sessionStorage.setItem('bb.ai.key',JSON.stringify('sk-test'));localStorage.setItem('bb.ai.model',JSON.stringify('claude-test-1'))}catch(e){}")
 ROUTES=['home','workflows','lab','cases','experience','systems','notes','note-testing-ai-assistants','about','agent','rag','evals','extract','data','voc','release','flows','spec','prioritize','redact','prompts']
 mode=sys.argv[1] if len(sys.argv)>1 else 'offline'
