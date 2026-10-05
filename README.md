@@ -72,6 +72,10 @@ tests/
   check.py          Playwright smoke test (all routes, desktop and phone, plus a mocked live run)
 ```
 
+## Visit counts
+
+Page views are counted with [GoatCounter](https://www.goatcounter.com) (no cookies, no personal data). The site code is `bbell-tech`, set in the script tag at the bottom of `index.html`; the router in `assets/js/04-frame.js` counts each hash route (`#lab`, `#cases`, …) as its own page. GoatCounter ignores `localhost`, so local runs aren't counted.
+
 ## Run it locally
 
 ```bash

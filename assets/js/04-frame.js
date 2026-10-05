@@ -72,6 +72,14 @@ function showRoute() {
   document.title = id === "home" ? "Ben Bell · AI Automation Builder" : (P ? P.title : ROUTES[id].title) + " · Ben Bell";
   const anchor = ROUTES[id] && ROUTES[id].anchorOf && ROUTES[id].anchorOf(raw);
   window.scrollTo(0, 0);
+  trackView();
+}
+
+/* ---------- Visit counts (GoatCounter). Routes live in the hash, so each one is counted as its own path. ---------- */
+function trackView(tries = 0) {
+  const gc = window.goatcounter;
+  if (gc && gc.count) { gc.count({ path: "/" + ((location.hash || "#home").slice(1)), title: document.title }); return; }
+  if (tries < 20) setTimeout(() => trackView(tries + 1), 250); // the script loads async; wait up to 5s
 }
 
 /* ---------- Theme ---------- */
